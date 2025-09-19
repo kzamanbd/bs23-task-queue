@@ -65,4 +65,18 @@ interface JobInterface
     public function toArray(): array;
 
     public static function fromArray(array $data): self;
+
+    public function isExpired(): bool;
+
+    public function canRetry(): bool;
+
+    public function isCompleted(): bool;
+
+    public function isFailed(): bool;
+
+    public function isPending(): bool;
+
+    public function isProcessing(): bool;
+
+    public function isCancelled(): bool;
 }
