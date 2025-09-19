@@ -394,4 +394,44 @@ class DatabaseQueueDriver implements QueueDriverInterface
             throw new \RuntimeException('Database queue driver is not connected');
         }
     }
+
+    public function getStats(): array
+    {
+        $this->ensureConnected();
+
+        $sql = "SELECT 
+                    queue_name,
+                    COUNT(*) as total_jobs,
+                    SUM(CASE WHEN state = 'pending' THEN 1 ELSE 0 END) as pending,
+                    SUM(CASE WHEN state = 'processing' THEN 1 ELSE 0 END) as processing,
+                    SUM(CASE WHEN state = 'completed' THEN 1 ELSE 0 END) as completed,
+                    SUM(CASE WHEN state = 'failed' THEN 1 ELSE 0 END) as failed,
+                    AVG(priority) as avg_priority,
+                    MIN(created_at) as oldest_job,
+                    MAX(created_at) as newest_job
+                FROM {$this->tableName} 
+                GROUP BY queue_name";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+
+        $stats = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $queueName = $row['queue_name'];
+            $stats[$queueName] = [
+                'total_jobs' => (int) $row['total_jobs'],
+                'by_state' => [
+                    'pending' => (int) $row['pending'],
+                    'processing' => (int) $row['processing'],
+                    'completed' => (int) $row['completed'],
+                    'failed' => (int) $row['failed']
+                ],
+                'avg_priority' => round((float) $row['avg_priority'], 2),
+                'oldest_job' => $row['oldest_job'],
+                'newest_job' => $row['newest_job']
+            ];
+        }
+
+        return $stats;
+    }
 }

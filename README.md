@@ -386,16 +386,19 @@ class ApiSyncJob extends AbstractJob
 ### Optimizing Worker Performance
 
 1. **Use multiple workers** for high throughput:
+
    ```bash
    php bin/queue queue:work --workers=4
    ```
 
 2. **Set appropriate memory limits**:
+
    ```bash
    php bin/queue queue:work --memory=100  # 100MB
    ```
 
 3. **Monitor worker health**:
+
    ```bash
    # Check queue statistics regularly
    php bin/queue queue:test --jobs=0
@@ -410,6 +413,7 @@ class ApiSyncJob extends AbstractJob
    - Job state
 
 2. **Regular cleanup**:
+
    ```php
    // Purge completed jobs older than 30 days
    $oldJobs = $manager->getJobsByState('completed', null, 1000);
@@ -478,6 +482,7 @@ stdout_logfile=/var/log/task-queue-worker.log
 ### Monitoring
 
 Set up monitoring for:
+
 - Queue depth (pending jobs)
 - Worker health and memory usage
 - Failed job count
@@ -535,6 +540,7 @@ MIT License - see LICENSE file for details.
 ## 🆘 Support
 
 For issues and questions:
+
 1. Check the troubleshooting section
 2. Run the demo: `php demo.php`
 3. Check test cases in `tests/` directory

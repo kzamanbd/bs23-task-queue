@@ -30,6 +30,8 @@ interface QueueDriverInterface
 
     public function getQueueStats(string $queue = null): array;
 
+    public function getStats(): array;
+
     public function connect(): void;
 
     public function disconnect(): void;

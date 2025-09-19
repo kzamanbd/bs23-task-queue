@@ -17,6 +17,7 @@ class Application extends BaseApplication
             new WorkCommand(),
             new QueueCommand(),
             new DashboardCommand(),
+            new ScheduleCommand(),
         ]);
     }
 
