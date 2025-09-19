@@ -145,6 +145,18 @@ class QueueManager
         $this->logger->info('Queue purged', ['queue' => $queue]);
     }
 
+    public function cleanupOldCompletedJobs(int $hoursOld = 1): int
+    {
+        $deletedCount = $this->driver->cleanupOldCompletedJobs($hoursOld);
+        if ($deletedCount > 0) {
+            $this->logger->info('Cleaned up old completed jobs', [
+                'deleted_count' => $deletedCount,
+                'hours_old' => $hoursOld
+            ]);
+        }
+        return $deletedCount;
+    }
+
     public function getJobById(string $jobId): ?JobInterface
     {
         return $this->driver->getJobById($jobId);

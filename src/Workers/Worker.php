@@ -53,6 +53,7 @@ class Worker implements WorkerInterface
 
         $startTime = time();
         $lastHeartbeat = time();
+        $lastCleanup = time();
 
         while ($this->running && ($timeout === 0 || (time() - $startTime) < $timeout)) {
             try {
@@ -94,6 +95,12 @@ class Worker implements WorkerInterface
                 if ((time() - $lastHeartbeat) >= 30) {
                     $this->sendHeartbeat($queue);
                     $lastHeartbeat = time();
+                }
+
+                // Cleanup old completed jobs every 5 minutes
+                if ((time() - $lastCleanup) >= 300) {
+                    $this->cleanupOldCompletedJobs();
+                    $lastCleanup = time();
                 }
 
             } catch (\Throwable $e) {
@@ -216,7 +223,8 @@ class Worker implements WorkerInterface
 
             $job->setState(JobInterface::STATE_COMPLETED);
             $job->setCompletedAt(new \DateTimeImmutable());
-            $this->queueDriver->delete($job);
+            // Keep completed jobs for 1 hour instead of deleting immediately
+            $this->queueDriver->update($job);
 
             $this->jobsProcessed++;
             $processingTime = microtime(true) - $startTime;
@@ -317,6 +325,23 @@ class Worker implements WorkerInterface
     public function setProcessId(int $processId): void
     {
         $this->processId = $processId;
+    }
+
+    private function cleanupOldCompletedJobs(): void
+    {
+        try {
+            // Clean up completed jobs older than 1 hour
+            $deletedCount = $this->queueDriver->cleanupOldCompletedJobs(1);
+            if ($deletedCount > 0) {
+                $this->logger->info('Cleaned up old completed jobs', [
+                    'deleted_count' => $deletedCount
+                ]);
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('Failed to cleanup old completed jobs', [
+                'error' => $e->getMessage()
+            ]);
+        }
     }
 
     private function createDefaultLogger(): LoggerInterface

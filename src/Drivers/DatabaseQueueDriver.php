@@ -145,6 +145,45 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $stmt->execute([$job->getId()]);
     }
 
+    public function update(JobInterface $job): void
+    {
+        $this->ensureConnected();
+
+        $sql = "UPDATE {$this->tableName} SET 
+                state = ?, 
+                attempts = ?, 
+                updated_at = ?, 
+                completed_at = ?, 
+                failed_at = ?,
+                exception = ?
+                WHERE id = ?";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([
+            $job->getState(),
+            $job->getAttempts(),
+            $job->getUpdatedAt()->format('Y-m-d H:i:s'),
+            $job->getCompletedAt() ? $job->getCompletedAt()->format('Y-m-d H:i:s') : null,
+            $job->getFailedAt() ? $job->getFailedAt()->format('Y-m-d H:i:s') : null,
+            $job->getException() ? $job->getException()->getMessage() : null,
+            $job->getId()
+        ]);
+    }
+
+    public function cleanupOldCompletedJobs(int $hoursOld = 1): int
+    {
+        $this->ensureConnected();
+
+        $sql = "DELETE FROM {$this->tableName} 
+                WHERE state = 'completed' 
+                AND completed_at < datetime('now', '-{$hoursOld} hours')";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute();
+        
+        return $stmt->rowCount();
+    }
+
     public function release(JobInterface $job, int $delay = 0): void
     {
         $this->ensureConnected();

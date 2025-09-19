@@ -14,6 +14,8 @@ interface QueueDriverInterface
 
     public function delete(JobInterface $job): void;
 
+    public function update(JobInterface $job): void;
+
     public function release(JobInterface $job, int $delay = 0): void;
 
     public function size(string $queue): int;
@@ -31,6 +33,8 @@ interface QueueDriverInterface
     public function getQueueStats(string $queue = null): array;
 
     public function getStats(): array;
+
+    public function cleanupOldCompletedJobs(int $hoursOld = 1): int;
 
     public function connect(): void;
 
