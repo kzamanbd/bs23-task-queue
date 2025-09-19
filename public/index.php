@@ -62,288 +62,62 @@ $manager->disconnect();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Queue Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f7fa;
-            color: #333;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        
-        .header p {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .stat-card h3 {
-            color: #666;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-card .value {
-            font-size: 2.5rem;
-            font-weight: bold;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-card.pending .value { color: #f39c12; }
-        .stat-card.processing .value { color: #3498db; }
-        .stat-card.completed .value { color: #27ae60; }
-        .stat-card.failed .value { color: #e74c3c; }
-        
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 2rem;
-        }
-        
-        .chart-container {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .chart-container h3 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        
-        .recent-jobs {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        
-        .recent-jobs h3 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        
-        .job-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem;
-            border-bottom: 1px solid #eee;
-            transition: background 0.2s;
-        }
-        
-        .job-item:hover {
-            background: #f8f9fa;
-        }
-        
-        .job-item:last-child {
-            border-bottom: none;
-        }
-        
-        .job-info {
-            flex: 1;
-        }
-        
-        .job-id {
-            font-family: monospace;
-            font-size: 0.8rem;
-            color: #666;
-        }
-        
-        .job-queue {
-            font-size: 0.9rem;
-            color: #888;
-            margin-top: 0.25rem;
-        }
-        
-        .job-state {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        .job-state.pending { background: #fef3cd; color: #856404; }
-        .job-state.processing { background: #cce5ff; color: #004085; }
-        .job-state.completed { background: #d4edda; color: #155724; }
-        .job-state.failed { background: #f8d7da; color: #721c24; }
-        
-        .controls {
-            background: white;
-            border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        
-        .controls h3 {
-            margin-bottom: 1rem;
-            color: #333;
-        }
-        
-        .btn {
-            background: #667eea;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            margin-right: 0.5rem;
-            margin-bottom: 0.5rem;
-            transition: background 0.2s;
-        }
-        
-        .btn:hover {
-            background: #5a6fd8;
-        }
-        
-        .btn.danger {
-            background: #e74c3c;
-        }
-        
-        .btn.danger:hover {
-            background: #c0392b;
-        }
-        
-        .refresh-indicator {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #27ae60;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        
-        .refresh-indicator.show {
-            opacity: 1;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: #666;
-        }
-        
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 1rem;
-            border-radius: 6px;
-            margin: 1rem 0;
-        }
-        
-        @media (max-width: 768px) {
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            }
-        }
-    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body>
-    <div class="header">
-        <h1>🚀 Task Queue Dashboard</h1>
-        <p>Real-time monitoring and management</p>
+<body class="bg-gray-50 text-gray-800 font-sans">
+    <div class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-8 text-center">
+        <h1 class="text-4xl font-bold mb-2">🚀 Task Queue Dashboard</h1>
+        <p class="text-lg opacity-90">Real-time monitoring and management</p>
     </div>
     
-    <div class="refresh-indicator" id="refreshIndicator">Data refreshed</div>
+    <div class="fixed top-5 right-5 bg-green-500 text-white px-4 py-2 rounded-full text-sm opacity-0 transition-opacity duration-300" id="refreshIndicator">Data refreshed</div>
     
-    <div class="container">
-        <div class="controls">
-            <h3>Quick Actions</h3>
-            <button class="btn" onclick="refreshData()">🔄 Refresh Data</button>
-            <button class="btn" onclick="createTestJobs()">➕ Create Test Jobs</button>
-            <button class="btn danger" onclick="purgeQueue('default')">🗑️ Purge Default Queue</button>
-            <button class="btn danger" onclick="purgeQueue('high-priority')">🗑️ Purge High Priority</button>
-        </div>
-        
-        <div class="stats-grid" id="statsGrid">
-            <div class="stat-card pending">
-                <h3>Pending Jobs</h3>
-                <div class="value" id="pendingCount">-</div>
-            </div>
-            <div class="stat-card processing">
-                <h3>Processing Jobs</h3>
-                <div class="value" id="processingCount">-</div>
-            </div>
-            <div class="stat-card completed">
-                <h3>Completed Jobs</h3>
-                <div class="value" id="completedCount">-</div>
-            </div>
-            <div class="stat-card failed">
-                <h3>Failed Jobs</h3>
-                <div class="value" id="failedCount">-</div>
+    <div class="max-w-7xl mx-auto px-8 py-8">
+        <div class="bg-white rounded-xl p-6 shadow-lg mb-8">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+            <div class="flex flex-wrap gap-2">
+                <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors duration-200" onclick="refreshData()">🔄 Refresh Data</button>
+                <button class="bg-indigo-500 hover:bg-indigo-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors duration-200" onclick="createTestJobs()">➕ Create Test Jobs</button>
+                <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors duration-200" onclick="purgeQueue('default')">🗑️ Purge Default Queue</button>
+                <button class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg text-sm font-medium transition-colors duration-200" onclick="purgeQueue('high-priority')">🗑️ Purge High Priority</button>
             </div>
         </div>
         
-        <div class="dashboard-grid">
-            <div class="chart-container">
-                <h3>Queue Status Distribution</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="statsGrid">
+            <div class="bg-white rounded-xl p-6 shadow-lg hover:-translate-y-1 transition-transform duration-200">
+                <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide mb-2">Pending Jobs</h3>
+                <div class="text-4xl font-bold text-amber-500" id="pendingCount">-</div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-lg hover:-translate-y-1 transition-transform duration-200">
+                <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide mb-2">Processing Jobs</h3>
+                <div class="text-4xl font-bold text-blue-500" id="processingCount">-</div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-lg hover:-translate-y-1 transition-transform duration-200">
+                <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide mb-2">Completed Jobs</h3>
+                <div class="text-4xl font-bold text-green-500" id="completedCount">-</div>
+            </div>
+            <div class="bg-white rounded-xl p-6 shadow-lg hover:-translate-y-1 transition-transform duration-200">
+                <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide mb-2">Failed Jobs</h3>
+                <div class="text-4xl font-bold text-red-500" id="failedCount">-</div>
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+            <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Queue Status Distribution</h3>
                 <canvas id="queueChart" width="400" height="200"></canvas>
             </div>
             
-            <div class="recent-jobs">
-                <h3>Recent Jobs</h3>
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Jobs</h3>
                 <div id="recentJobsList">
-                    <div class="loading">Loading recent jobs...</div>
+                    <div class="text-center py-8 text-gray-500">Loading recent jobs...</div>
                 </div>
             </div>
         </div>
         
-        <div class="chart-container" style="margin-top: 2rem;">
-            <h3>Queue Performance Over Time</h3>
+        <div class="bg-white rounded-xl p-6 shadow-lg">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Queue Performance Over Time</h3>
             <canvas id="performanceChart" width="400" height="200"></canvas>
         </div>
     </div>
@@ -362,7 +136,7 @@ $manager->disconnect();
                     labels: ['Pending', 'Processing', 'Completed', 'Failed'],
                     datasets: [{
                         data: [0, 0, 0, 0],
-                        backgroundColor: ['#f39c12', '#3498db', '#27ae60', '#e74c3c'],
+                        backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'],
                         borderWidth: 2,
                         borderColor: '#fff'
                     }]
@@ -386,20 +160,20 @@ $manager->disconnect();
                     datasets: [{
                         label: 'Total Jobs',
                         data: [],
-                        borderColor: '#667eea',
-                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        borderColor: '#6366f1',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
                         tension: 0.4
                     }, {
                         label: 'Pending',
                         data: [],
-                        borderColor: '#f39c12',
-                        backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
                         tension: 0.4
                     }, {
                         label: 'Processing',
                         data: [],
-                        borderColor: '#3498db',
-                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         tension: 0.4
                     }]
                 },
@@ -446,7 +220,7 @@ $manager->disconnect();
             } catch (error) {
                 console.error('Error fetching data:', error);
                 document.getElementById('recentJobsList').innerHTML = 
-                    `<div class="error">Error loading data: ${error.message}. Please refresh the page.</div>`;
+                    `<div class="bg-red-50 text-red-700 p-4 rounded-lg">Error loading data: ${error.message}. Please refresh the page.</div>`;
             }
         }
         
@@ -482,27 +256,36 @@ $manager->disconnect();
             const container = document.getElementById('recentJobsList');
             
             if (!Array.isArray(jobs)) {
-                container.innerHTML = '<div class="error">Invalid jobs data received</div>';
+                container.innerHTML = '<div class="bg-red-50 text-red-700 p-4 rounded-lg">Invalid jobs data received</div>';
                 return;
             }
             
             if (jobs.length === 0) {
-                container.innerHTML = '<div class="loading">No recent jobs found</div>';
+                container.innerHTML = '<div class="text-center py-8 text-gray-500">No recent jobs found</div>';
                 return;
             }
             
             container.innerHTML = jobs.map(job => {
                 if (!job || typeof job !== 'object') {
-                    return '<div class="error">Invalid job data</div>';
+                    return '<div class="bg-red-50 text-red-700 p-4 rounded-lg mb-2">Invalid job data</div>';
                 }
                 
+                const stateColors = {
+                    'pending': 'bg-yellow-100 text-yellow-800',
+                    'processing': 'bg-blue-100 text-blue-800',
+                    'completed': 'bg-green-100 text-green-800',
+                    'failed': 'bg-red-100 text-red-800'
+                };
+                
+                const stateClass = stateColors[job.state] || 'bg-gray-100 text-gray-800';
+                
                 return `
-                    <div class="job-item">
-                        <div class="job-info">
-                            <div class="job-id">${job.id || 'Unknown'}</div>
-                            <div class="job-queue">Queue: ${job.queue || 'Unknown'} | Priority: ${job.priority || 0} | Attempts: ${job.attempts || 0}</div>
+                    <div class="flex justify-between items-center p-3 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200 last:border-b-0">
+                        <div class="flex-1">
+                            <div class="font-mono text-sm text-gray-600">${job.id || 'Unknown'}</div>
+                            <div class="text-sm text-gray-500 mt-1">Queue: ${job.queue || 'Unknown'} | Priority: ${job.priority || 0} | Attempts: ${job.attempts || 0}</div>
                         </div>
-                        <div class="job-state ${job.state || 'unknown'}">${job.state || 'unknown'}</div>
+                        <div class="px-3 py-1 rounded-full text-xs font-bold uppercase ${stateClass}">${job.state || 'unknown'}</div>
                     </div>
                 `;
             }).join('');
@@ -536,8 +319,12 @@ $manager->disconnect();
         // Show refresh indicator
         function showRefreshIndicator() {
             const indicator = document.getElementById('refreshIndicator');
-            indicator.classList.add('show');
-            setTimeout(() => indicator.classList.remove('show'), 2000);
+            indicator.classList.remove('opacity-0');
+            indicator.classList.add('opacity-100');
+            setTimeout(() => {
+                indicator.classList.remove('opacity-100');
+                indicator.classList.add('opacity-0');
+            }, 2000);
         }
         
         // Refresh data

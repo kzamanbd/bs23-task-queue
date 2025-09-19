@@ -250,15 +250,11 @@ server {
 </VirtualHost>
 ```
 
-### **Using Docker**
+### **Using the Built-in Server**
 
-```dockerfile
-FROM php:8.2-cli
-COPY . /app
-WORKDIR /app
-RUN composer install
-EXPOSE 8080
-CMD ["php", "bin/queue", "dashboard:serve", "--host=0.0.0.0"]
+```bash
+# Start the dashboard server using the built-in PHP server
+php bin/queue dashboard:serve --port=8080 --host=0.0.0.0
 ```
 
 ## 🎯 Use Cases
