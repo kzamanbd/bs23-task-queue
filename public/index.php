@@ -102,15 +102,15 @@ $manager->disconnect();
             </div>
         </div>
         
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-            <div class="lg:col-span-2 bg-white rounded-xl p-6 shadow-lg">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-xl p-6 shadow-lg">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Queue Status Distribution</h3>
                 <canvas id="queueChart" width="400" height="200"></canvas>
             </div>
             
             <div class="bg-white rounded-xl p-6 shadow-lg">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Jobs</h3>
-                <div id="recentJobsList">
+                <div id="recentJobsList" class="max-h-[400px] overflow-y-auto">
                     <div class="text-center py-8 text-gray-500">Loading recent jobs...</div>
                 </div>
             </div>
@@ -340,7 +340,7 @@ $manager->disconnect();
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'count=10&queue=default&priority=5'
+                    body: 'count=100&queue=default&priority=5'
                 });
                 
                 const result = await response.json();
