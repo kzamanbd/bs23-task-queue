@@ -31,7 +31,7 @@ cd task-queue
 composer install
 
 # Make CLI executable
-chmod +x bin/queue
+chmod +x worker
 ```
 
 ### First Run
@@ -41,10 +41,10 @@ chmod +x bin/queue
 php demo.php
 
 # Create some test jobs
-php bin/queue queue:test --jobs=5
+php worker queue:test --jobs=5
 
 # Start a worker to process jobs
-php bin/queue queue:work
+php worker queue:work
 ```
 
 ## 📋 Basic Usage
@@ -130,13 +130,13 @@ $manager->push($emailJob);
 
 ```bash
 # Start a single worker
-php bin/queue queue:work
+php worker queue:work
 
 # Start multiple workers
-php bin/queue queue:work --workers=4
+php worker queue:work --workers=4
 
 # Start worker with custom settings
-php bin/queue queue:work --memory=100 --max-jobs=500 --timeout=1800
+php worker queue:work --memory=100 --max-jobs=500 --timeout=1800
 ```
 
 ## 🎯 Job Priorities
@@ -204,10 +204,10 @@ $manager->retryFailedJob('job_id_here');
 
 ```bash
 # List all available commands
-php bin/queue list
+php worker list
 
 # Get help for a specific command
-php bin/queue help queue:work
+php worker help queue:work
 ```
 
 ### Complete Command Reference
@@ -216,32 +216,32 @@ php bin/queue help queue:work
 
 ```bash
 # Test queue operations
-php bin/queue queue:test --jobs=10 --queue=default --priority=5
+php worker queue:test --jobs=10 --queue=default --priority=5
 
 # Start workers
-php bin/queue queue:work --workers=4 --memory=100 --timeout=3600
+php worker queue:work --workers=4 --memory=100 --timeout=3600
 
 # Start dashboard server
-php bin/queue dashboard:serve --host=0.0.0.0 --port=8080
+php worker dashboard:serve --host=0.0.0.0 --port=8080
 ```
 
 #### Advanced Scheduling Commands
 
 ```bash
 # Manage scheduled jobs
-php bin/queue schedule:manage list
-php bin/queue schedule:manage create --schedule="every 5 minutes" --job-class="TaskQueue\\Jobs\\TestJob"
-php bin/queue schedule:manage delete --job-id="job_12345"
-php bin/queue schedule:manage next
+php worker schedule:manage list
+php worker schedule:manage create --schedule="every 5 minutes" --job-class="TaskQueue\\Jobs\\TestJob"
+php worker schedule:manage delete --job-id="job_12345"
+php worker schedule:manage next
 ```
 
 #### Natural Language Scheduling Commands
 
 ```bash
 # Schedule jobs using natural language
-php bin/queue schedule:manage create --schedule="every day at 2:30 AM" --recurring
-php bin/queue schedule:manage create --schedule="every Monday at 9:00 AM" --recurring
-php bin/queue schedule:manage create --schedule="every 15 minutes" --recurring
+php worker schedule:manage create --schedule="every day at 2:30 AM" --recurring
+php worker schedule:manage create --schedule="every Monday at 9:00 AM" --recurring
+php worker schedule:manage create --schedule="every 15 minutes" --recurring
 ```
 
 ### queue:test Command
@@ -250,13 +250,13 @@ Create test jobs and view statistics:
 
 ```bash
 # Create 10 test jobs
-php bin/queue queue:test --jobs=10
+php worker queue:test --jobs=10
 
 # Create jobs in specific queue with custom priority
-php bin/queue queue:test --jobs=5 --queue=high-priority --priority=10
+php worker queue:test --jobs=5 --queue=high-priority --priority=10
 
 # Create jobs with delay
-php bin/queue queue:test --jobs=3 --delay=30
+php worker queue:test --jobs=3 --delay=30
 ```
 
 ### queue:work Command
@@ -265,22 +265,22 @@ Start workers to process jobs:
 
 ```bash
 # Start single worker for default queue
-php bin/queue queue:work
+php worker queue:work
 
 # Start worker for specific queue
-php bin/queue queue:work emails
+php worker queue:work emails
 
 # Start multiple workers
-php bin/queue queue:work --workers=4
+php worker queue:work --workers=4
 
 # Start worker with custom memory limit (in MB)
-php bin/queue queue:work --memory=100
+php worker queue:work --memory=100
 
 # Start worker with custom timeout (in seconds)
-php bin/queue queue:work --timeout=3600
+php worker queue:work --timeout=3600
 
 # Start worker with max jobs limit
-php bin/queue queue:work --max-jobs=1000
+php worker queue:work --max-jobs=1000
 ```
 
 ## 🏗️ Configuration
@@ -431,20 +431,20 @@ class ApiSyncJob extends AbstractJob
 1. **Use multiple workers** for high throughput:
 
    ```bash
-   php bin/queue queue:work --workers=4
+   php worker queue:work --workers=4
    ```
 
 2. **Set appropriate memory limits**:
 
    ```bash
-   php bin/queue queue:work --memory=100  # 100MB
+   php worker queue:work --memory=100  # 100MB
    ```
 
 3. **Monitor worker health**:
 
    ```bash
    # Check queue statistics regularly
-   php bin/queue queue:test --jobs=0
+   php worker queue:test --jobs=0
    ```
 
 ### Database Optimization
@@ -512,7 +512,7 @@ Use a process manager like Supervisor:
 
 ```ini
 [program:task-queue-worker]
-command=php /path/to/task-queue/bin/queue queue:work --workers=4
+command=php /path/to/task-queue/worker queue:work --workers=4
 directory=/path/to/task-queue
 autostart=true
 autorestart=true
@@ -623,7 +623,7 @@ $faultTolerance->handleNetworkPartition('node-1', true); // Handle network issue
 
 ```bash
 # Start the web dashboard
-php bin/queue dashboard:serve --host=0.0.0.0 --port=8080
+php worker dashboard:serve --host=0.0.0.0 --port=8080
 ```
 
 #### Alerting System

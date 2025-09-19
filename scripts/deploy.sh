@@ -86,7 +86,7 @@ sudo chmod 600 $APP_DIR/.env
 
 # Run database migrations
 log "🗄️ Running database migrations..."
-php bin/queue migrate:run || error "Database migration failed"
+php worker migrate:run || error "Database migration failed"
 
 # Clear caches
 log "🧹 Clearing caches..."
@@ -96,7 +96,7 @@ fi
 
 # Test configuration
 log "🧪 Testing configuration..."
-php bin/queue queue:test --jobs=0 || error "Configuration test failed"
+php worker queue:test --jobs=0 || error "Configuration test failed"
 
 # Start services
 log "▶️ Starting services..."
@@ -128,7 +128,7 @@ log "   Services: Running"
 
 # Check queue status
 log "📈 Queue Status:"
-php bin/queue queue:test --jobs=0 | tee -a $LOG_FILE
+php worker queue:test --jobs=0 | tee -a $LOG_FILE
 
 log "🎉 Deployment completed successfully!"
 

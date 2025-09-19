@@ -81,7 +81,7 @@ check_queue() {
     log_info "Checking queue functionality..."
     
     # Test queue operations
-    if php bin/queue queue:test --jobs=0 > /dev/null 2>&1; then
+    if php worker queue:test --jobs=0 > /dev/null 2>&1; then
         log_success "Queue operations are working"
     else
         log_error "Queue operations failed"

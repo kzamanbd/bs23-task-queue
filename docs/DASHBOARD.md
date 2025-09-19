@@ -38,13 +38,13 @@ A beautiful, real-time web dashboard for monitoring and managing the Task Queue 
 
 ```bash
 # Using CLI command (recommended)
-php bin/queue dashboard:serve
+php worker dashboard:serve
 
 # Or using the standalone server
-php bin/server
+php server
 
 # Custom host and port
-php bin/queue dashboard:serve --host=0.0.0.0 --port=9000
+php worker dashboard:serve --host=0.0.0.0 --port=9000
 ```
 
 ### 2. Access the Dashboard
@@ -58,10 +58,10 @@ Open your browser and navigate to:
 
 ```bash
 # Create some test jobs to see in the dashboard
-php bin/queue queue:test --jobs=50
+php worker queue:test --jobs=50
 
 # Start workers to process jobs
-php bin/queue queue:work --workers=4
+php worker queue:work --workers=4
 ```
 
 ## 📱 Dashboard Sections
@@ -185,10 +185,10 @@ Modern ES6+ features:
 
 ```bash
 # Custom host and port
-php bin/queue dashboard:serve --host=0.0.0.0 --port=9000
+php worker dashboard:serve --host=0.0.0.0 --port=9000
 
 # Production deployment
-php bin/queue dashboard:serve --host=127.0.0.1 --port=80
+php worker dashboard:serve --host=127.0.0.1 --port=80
 ```
 
 ### **Database Connection**
@@ -254,7 +254,7 @@ server {
 
 ```bash
 # Start the dashboard server using the built-in PHP server
-php bin/queue dashboard:serve --port=8080 --host=0.0.0.0
+php worker dashboard:serve --port=8080 --host=0.0.0.0
 ```
 
 ## 🎯 Use Cases
@@ -287,7 +287,7 @@ php bin/queue dashboard:serve --port=8080 --host=0.0.0.0
    - Check firewall settings
 
 2. **No data showing**
-   - Ensure jobs exist: `php bin/queue queue:test`
+   - Ensure jobs exist: `php worker queue:test`
    - Check database connection
    - Verify file permissions
 

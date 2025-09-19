@@ -37,4 +37,4 @@ RUN mkdir -p storage && chmod 777 storage
 EXPOSE 8080
 
 # Start command
-CMD ["php", "bin/queue", "dashboard:serve", "--host=0.0.0.0", "--port=8080"]
+CMD ["php", "worker", "dashboard:serve", "--host=0.0.0.0", "--port=8080"]

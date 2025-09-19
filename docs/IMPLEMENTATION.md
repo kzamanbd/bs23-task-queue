@@ -36,7 +36,7 @@ cd task-queue
 composer install
 
 # Make CLI executable
-chmod +x bin/queue
+chmod +x worker
 ```
 
 > Setup and usage are documented in `README.md`.

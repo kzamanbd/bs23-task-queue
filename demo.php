@@ -150,6 +150,6 @@ if (!empty($failedJobs)) {
 }
 
 echo "\n🎉 Demo completed! Check the database file: " . __DIR__ . "/storage/demo.db\n";
-echo "💡 Try running: php bin/queue queue:work --workers=2 --timeout=30\n";
+echo "💡 Try running: php worker queue:work --workers=2 --timeout=30\n";
 
 $manager->disconnect();

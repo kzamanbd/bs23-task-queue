@@ -228,7 +228,7 @@ default_statistics_target = 100
 ```bash
 # Run database migrations
 cd /opt/task-queue
-sudo -u www-data php bin/queue migrate:run
+sudo -u www-data php worker migrate:run
 ```
 
 ---
@@ -241,7 +241,7 @@ Create `/etc/supervisor/conf.d/task-queue.conf`:
 
 ```ini
 [program:task-queue-workers]
-command=php /opt/task-queue/bin/queue queue:work --workers=4 --timeout=3600 --memory=128
+command=php /opt/task-queue/worker queue:work --workers=4 --timeout=3600 --memory=128
 directory=/opt/task-queue
 user=www-data
 autostart=true
@@ -254,7 +254,7 @@ numprocs=2
 process_name=%(program_name)s_%(process_num)02d
 
 [program:task-queue-high-priority]
-command=php /opt/task-queue/bin/queue queue:work priority-queue --workers=2 --timeout=1800 --memory=64
+command=php /opt/task-queue/worker queue:work priority-queue --workers=2 --timeout=1800 --memory=64
 directory=/opt/task-queue
 user=www-data
 autostart=true
@@ -267,7 +267,7 @@ numprocs=1
 process_name=%(program_name)s_%(process_num)02d
 
 [program:task-queue-dashboard]
-command=php /opt/task-queue/bin/queue dashboard:serve --port=8080 --host=127.0.0.1
+command=php /opt/task-queue/worker dashboard:serve --port=8080 --host=127.0.0.1
 directory=/opt/task-queue
 user=www-data
 autostart=true
@@ -292,7 +292,7 @@ Type=simple
 User=www-data
 Group=www-data
 WorkingDirectory=/opt/task-queue
-ExecStart=/usr/bin/php bin/queue queue:work --workers=4 --timeout=3600 --memory=128
+ExecStart=/usr/bin/php worker queue:work --workers=4 --timeout=3600 --memory=128
 Restart=always
 RestartSec=5
 StandardOutput=journal
@@ -471,7 +471,7 @@ check_workers() {
 
 # Check queue depth
 check_queue_depth() {
-    PENDING_JOBS=$(php /opt/task-queue/bin/queue queue:stats | grep "Pending" | awk '{print $2}')
+    PENDING_JOBS=$(php /opt/task-queue/worker queue:stats | grep "Pending" | awk '{print $2}')
     if [ $PENDING_JOBS -gt 1000 ]; then
         echo "$(date): WARNING - High queue depth: $PENDING_JOBS jobs" >> $LOG_FILE
         echo "Task Queue Alert: High queue depth ($PENDING_JOBS jobs)" | mail -s "Task Queue Alert" $ALERT_EMAIL
@@ -480,7 +480,7 @@ check_queue_depth() {
 
 # Check database connectivity
 check_database() {
-    php /opt/task-queue/bin/queue queue:test --jobs=0 > /dev/null 2>&1
+    php /opt/task-queue/worker queue:test --jobs=0 > /dev/null 2>&1
     if [ $? -ne 0 ]; then
         echo "$(date): ERROR - Database connection failed" >> $LOG_FILE
         echo "Task Queue Alert: Database connection failed" | mail -s "Task Queue Critical Alert" $ALERT_EMAIL
@@ -708,7 +708,7 @@ sudo supervisorctl update
 
 ```bash
 # Test database connection
-php /opt/task-queue/bin/queue queue:test --jobs=0
+php /opt/task-queue/worker queue:test --jobs=0
 
 # Check database status
 sudo systemctl status mysql
@@ -731,7 +731,7 @@ curl -I http://localhost/api.php?action=stats
 
 ```bash
 # Monitor queue performance
-watch -n 5 'php /opt/task-queue/bin/queue queue:stats'
+watch -n 5 'php /opt/task-queue/worker queue:stats'
 
 # Monitor system resources
 htop

@@ -74,7 +74,7 @@ case "${1:-start}" in
     
     test)
         log "🧪 Creating test jobs..."
-        docker-compose exec app php bin/queue queue:test --jobs=5
+        docker-compose exec app php worker queue:test --jobs=5
         log "✅ Test jobs created!"
         ;;
     

@@ -77,10 +77,10 @@ APP_ENV=production  # Application environment
 
 ```bash
 # Create test jobs
-docker-compose exec app php bin/queue queue:test --jobs=5
+docker-compose exec app php worker queue:test --jobs=5
 
 # Check queue status
-docker-compose exec app php bin/queue queue:test --jobs=0
+docker-compose exec app php worker queue:test --jobs=0
 ```
 
 ## Troubleshooting
