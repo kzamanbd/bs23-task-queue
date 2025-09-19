@@ -16,6 +16,7 @@ class Application extends BaseApplication
         $this->addCommands([
             new WorkCommand(),
             new QueueCommand(),
+            new DashboardCommand(),
         ]);
     }
 
