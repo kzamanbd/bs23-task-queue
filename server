@@ -8,7 +8,7 @@ echo "==============================\n\n";
 
 $host = '127.0.0.1';
 $port = 8080;
-$publicDir = __DIR__ . '/../public';
+$publicDir = __DIR__ . '/public';
 
 echo "Starting server on http://{$host}:{$port}\n";
 echo "Dashboard: http://{$host}:{$port}\n";
