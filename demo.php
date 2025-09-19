@@ -8,7 +8,6 @@ use TaskQueue\QueueManager;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Jobs\TestJob;
 use TaskQueue\Support\Encryption;
-use PDO;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 

@@ -8,7 +8,6 @@ use TaskQueue\QueueManager;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Jobs\TestJob;
 use TaskQueue\Support\Encryption;
-use PDO;
 
 // Setup database connection
 $pdo = new PDO('sqlite:' . __DIR__ . '/../storage/queue.db');
