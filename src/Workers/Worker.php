@@ -314,6 +314,11 @@ class Worker implements WorkerInterface
         }
     }
 
+    public function setProcessId(int $processId): void
+    {
+        $this->processId = $processId;
+    }
+
     private function createDefaultLogger(): LoggerInterface
     {
         $logger = new Logger('worker');

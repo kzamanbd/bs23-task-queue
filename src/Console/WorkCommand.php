@@ -66,22 +66,11 @@ class WorkCommand extends Command
         $output->writeln("<info>Worker timeout: {$timeout} seconds</info>");
 
         try {
-            if ($workerCount > 1) {
-                $workers = $manager->startMultipleWorkers($queue, $workerCount);
-                $output->writeln("<info>Started {$workerCount} workers</info>");
-                
-                // Wait for all workers to complete
-                while (true) {
-                    $activeWorkers = $manager->getActiveWorkers();
-                    if (empty($activeWorkers)) {
-                        break;
-                    }
-                    sleep(1);
-                }
-            } else {
-                $worker = $manager->startWorker($queue, $timeout);
-                $output->writeln("<info>Worker completed</info>");
-            }
+            // For Docker containers, use a single worker that processes jobs continuously
+            // Multiple workers should be handled by scaling the container replicas
+            $output->writeln("<info>Starting worker for queue: {$queue}</info>");
+            $worker = $manager->startWorker($queue, $timeout);
+            $output->writeln("<info>Worker completed</info>");
 
             return Command::SUCCESS;
         } catch (\Throwable $e) {

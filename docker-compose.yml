@@ -11,7 +11,7 @@ services:
 
   worker:
     build: .
-    command: php bin/queue queue:work --workers=2 --timeout=3600
+    command: php bin/queue queue:work --timeout=3600
     volumes:
       - ./storage:/var/www/html/storage
     environment:
