@@ -455,12 +455,16 @@ $manager->disconnect();
         function updateStats(stats) {
             let totalPending = 0, totalProcessing = 0, totalCompleted = 0, totalFailed = 0;
             
-            Object.values(stats).forEach(queueStats => {
-                totalPending += queueStats.by_state.pending || 0;
-                totalProcessing += queueStats.by_state.processing || 0;
-                totalCompleted += queueStats.by_state.completed || 0;
-                totalFailed += queueStats.by_state.failed || 0;
-            });
+            if (stats && typeof stats === 'object') {
+                Object.values(stats).forEach(queueStats => {
+                    if (queueStats && queueStats.by_state) {
+                        totalPending += queueStats.by_state.pending || 0;
+                        totalProcessing += queueStats.by_state.processing || 0;
+                        totalCompleted += queueStats.by_state.completed || 0;
+                        totalFailed += queueStats.by_state.failed || 0;
+                    }
+                });
+            }
             
             document.getElementById('pendingCount').textContent = totalPending;
             document.getElementById('processingCount').textContent = totalProcessing;
@@ -468,28 +472,41 @@ $manager->disconnect();
             document.getElementById('failedCount').textContent = totalFailed;
             
             // Update chart
-            queueChart.data.datasets[0].data = [totalPending, totalProcessing, totalCompleted, totalFailed];
-            queueChart.update();
+            if (queueChart) {
+                queueChart.data.datasets[0].data = [totalPending, totalProcessing, totalCompleted, totalFailed];
+                queueChart.update();
+            }
         }
         
         // Update recent jobs list
         function updateRecentJobs(jobs) {
             const container = document.getElementById('recentJobsList');
             
+            if (!Array.isArray(jobs)) {
+                container.innerHTML = '<div class="error">Invalid jobs data received</div>';
+                return;
+            }
+            
             if (jobs.length === 0) {
                 container.innerHTML = '<div class="loading">No recent jobs found</div>';
                 return;
             }
             
-            container.innerHTML = jobs.map(job => `
-                <div class="job-item">
-                    <div class="job-info">
-                        <div class="job-id">${job.id}</div>
-                        <div class="job-queue">Queue: ${job.queue} | Priority: ${job.priority} | Attempts: ${job.attempts}</div>
+            container.innerHTML = jobs.map(job => {
+                if (!job || typeof job !== 'object') {
+                    return '<div class="error">Invalid job data</div>';
+                }
+                
+                return `
+                    <div class="job-item">
+                        <div class="job-info">
+                            <div class="job-id">${job.id || 'Unknown'}</div>
+                            <div class="job-queue">Queue: ${job.queue || 'Unknown'} | Priority: ${job.priority || 0} | Attempts: ${job.attempts || 0}</div>
+                        </div>
+                        <div class="job-state ${job.state || 'unknown'}">${job.state || 'unknown'}</div>
                     </div>
-                    <div class="job-state ${job.state}">${job.state}</div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         // Update performance chart
@@ -498,9 +515,9 @@ $manager->disconnect();
             
             performanceData.push({
                 time: now,
-                total: performance.total_jobs,
-                pending: performance.pending,
-                processing: performance.processing
+                total: performance.total_jobs || performance.total || 0,
+                pending: performance.pending || 0,
+                processing: performance.processing || 0
             });
             
             // Keep only last 20 data points
@@ -508,11 +525,13 @@ $manager->disconnect();
                 performanceData.shift();
             }
             
-            performanceChart.data.labels = performanceData.map(d => d.time);
-            performanceChart.data.datasets[0].data = performanceData.map(d => d.total);
-            performanceChart.data.datasets[1].data = performanceData.map(d => d.pending);
-            performanceChart.data.datasets[2].data = performanceData.map(d => d.processing);
-            performanceChart.update();
+            if (performanceChart) {
+                performanceChart.data.labels = performanceData.map(d => d.time);
+                performanceChart.data.datasets[0].data = performanceData.map(d => d.total);
+                performanceChart.data.datasets[1].data = performanceData.map(d => d.pending);
+                performanceChart.data.datasets[2].data = performanceData.map(d => d.processing);
+                performanceChart.update();
+            }
         }
         
         // Show refresh indicator
