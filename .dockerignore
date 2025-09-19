@@ -1,0 +1,11 @@
+.git
+.gitignore
+README.md
+*.md
+vendor/
+storage/logs/
+tests/
+phpunit.xml
+.dockerignore
+docker-compose.yml
+Dockerfile

@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: php bin/queue queue:work --workers=2 --timeout=3600
+    volumes:
+      - ./storage:/var/www/html/storage
+    environment:
+      - APP_ENV=production
+    restart: unless-stopped
+    depends_on:
+      - app
