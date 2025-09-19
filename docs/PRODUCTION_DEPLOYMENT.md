@@ -49,7 +49,7 @@ This guide provides comprehensive instructions for deploying the Task Queue syst
 
 ### Recommended Architecture
 
-```mermaid
+```md
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Load Balancer │    │   Web Server    │    │   Queue Workers │
 │     (Nginx)     │────│   (PHP-FPM)     │────│   (Supervisor)  │
@@ -64,7 +64,7 @@ This guide provides comprehensive instructions for deploying the Task Queue syst
 
 ### High Availability Setup
 
-```mermaid
+```md
 ┌─────────────────┐    ┌─────────────────┐
 │   Load Balancer │    │   Load Balancer │
 │   (Primary)     │    │   (Secondary)   │
