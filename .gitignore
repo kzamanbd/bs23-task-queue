@@ -1,3 +1,4 @@
 vendor
 /storage/**/*.db
+/storage/**/*.db-journal
 .phpunit.result.cache
