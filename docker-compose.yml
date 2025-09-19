@@ -19,3 +19,5 @@ services:
     restart: unless-stopped
     depends_on:
       - app
+    deploy:
+      replicas: 5

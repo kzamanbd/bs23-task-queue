@@ -31,9 +31,11 @@ fi
 case "${1:-start}" in
     start)
         log "🚀 Starting Task Queue with Docker..."
+        log "👥 Starting 5 worker containers..."
         docker-compose up -d
         log "✅ Services started successfully!"
         log "📊 Dashboard: http://localhost:8080"
+        log "👥 Workers: 5 containers processing jobs"
         log "📋 Queue Status:"
         sleep 5
         curl -s http://localhost:8080/api.php?action=stats | jq . 2>/dev/null || echo "API starting up..."
@@ -77,10 +79,11 @@ case "${1:-start}" in
         ;;
     
     scale)
-        local workers=${2:-3}
+        workers=${2:-5}
         log "📈 Scaling workers to $workers..."
         docker-compose up -d --scale worker=$workers
         log "✅ Workers scaled to $workers!"
+        log "📊 Dashboard: http://localhost:8080"
         ;;
     
     clean)
