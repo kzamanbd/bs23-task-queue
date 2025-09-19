@@ -1,34 +1,11 @@
 # Task Queue - Enterprise Job Processing System
 
-## Overview
+## Purpose of this Document
 
-This is a comprehensive job queue and processing system built in PHP 8.2+ that provides enterprise-grade features for handling background jobs, similar to Laravel Horizon or Symfony Messenger. The system is designed to be fault-tolerant, scalable, and provides real-time insights into job processing.
+This document focuses on architecture and internal implementation details.
 
-## Features Implemented (Milestone 1)
-
-### ✅ Core Job Queue Architecture
-
-#### Job Queue System
-
-- **Multiple Queue Drivers**: Database (SQLite/MySQL/PostgreSQL), Redis, File support
-- **Job Payload Encryption**: AES-256-GCM encryption for sensitive data
-- **Compression**: Automatic compression for large payloads (>1KB)
-- **Queue Priority Levels**: 4 priority levels (Low, Normal, High, Urgent)
-- **Dead Letter Queue**: Failed jobs are retained for inspection and retry
-
-#### Job Lifecycle Management
-
-- **State Machine**: Complete job lifecycle (pending, processing, completed, failed, retrying, cancelled)
-- **Job Timeout & Heartbeat**: Configurable timeouts with worker heartbeat monitoring
-- **Job Cancellation**: Graceful job cancellation and cleanup
-- **Job Dependencies**: Support for job chaining and dependency resolution
-
-#### Worker Process Management
-
-- **Multi-Process Architecture**: Support for multiple concurrent workers
-- **Health Monitoring**: Worker health checks and automatic restart mechanisms
-- **Memory Leak Detection**: Memory usage monitoring with automatic worker recycling
-- **Graceful Shutdown**: Signal handling (SIGTERM, SIGINT, SIGUSR1, SIGUSR2)
+- For installation, usage, CLI reference, and feature overview, see `README.md`.
+- This avoids duplication and keeps `README.md` user-focused while `IMPLEMENTATION.md` stays dev-focused.
 
 ## Architecture
 
@@ -62,159 +39,45 @@ composer install
 chmod +x bin/queue
 ```
 
-## Usage
-
-### CLI Commands
-
-#### Create Test Jobs
-
-```bash
-# Create 10 test jobs in default queue
-php bin/queue queue:test --jobs=10
-
-# Create jobs in specific queue with custom priority
-php bin/queue queue:test --jobs=5 --queue=high-priority --priority=10
-```
-
-#### Start Workers
-
-```bash
-# Start single worker for default queue
-php bin/queue queue:work
-
-# Start multiple workers
-php bin/queue queue:work --workers=4
-
-# Start worker with custom settings
-php bin/queue queue:work --memory=100 --max-jobs=500 --timeout=1800
-```
-
-### Programmatic Usage
-
-```php
-<?php
-
-use TaskQueue\QueueManager;
-use TaskQueue\Drivers\DatabaseQueueDriver;
-use TaskQueue\Jobs\TestJob;
-use TaskQueue\Support\Encryption;
-use PDO;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
-
-// Setup database connection
-$pdo = new PDO('sqlite:queue.db');
-$encryption = new Encryption('your-encryption-key');
-$driver = new DatabaseQueueDriver($pdo, $encryption);
-
-// Setup logger
-$logger = new Logger('queue');
-$logger->pushHandler(new StreamHandler('php://stdout', Logger::INFO));
-
-// Create queue manager
-$manager = new QueueManager($driver, $logger);
-$manager->connect();
-
-// Create and push a job
-$job = new TestJob(['data' => 'example'], [
-    'queue' => 'default',
-    'priority' => 5,
-    'tags' => ['important', 'batch-1']
-]);
-
-$manager->push($job);
-
-// Start worker
-$manager->startWorker('default');
-```
+> Setup and usage are documented in `README.md`.
 
 ## Testing
 
-```bash
-# Run all tests
-./vendor/bin/phpunit
-
-# Run specific test suite
-./vendor/bin/phpunit tests/Unit
-./vendor/bin/phpunit tests/Integration
-
-# Run with coverage
-./vendor/bin/phpunit --coverage-html coverage
-```
+Testing strategy and commands are covered in `README.md`.
 
 ## Configuration
 
-### Environment Variables
+Configuration examples live in `README.md`. This document covers how configuration is applied internally by components.
 
-```bash
-# Database configuration
-DB_CONNECTION=sqlite
-DB_PATH=storage/queue.db
+## Internal Job Types
 
-# Encryption key (32 characters recommended)
-ENCRYPTION_KEY=your-32-character-encryption-key
+Supported job modes include synchronous, asynchronous, scheduled, recurring, batched, chained, and parallel execution. See `README.md` for usage examples; this document focuses on how these modes are orchestrated internally via the scheduler, dependency resolver, and worker pool.
 
-# Worker configuration
-WORKER_MEMORY_LIMIT=52428800  # 50MB
-WORKER_MAX_JOBS=1000
-WORKER_TIMEOUT=3600  # 1 hour
-MAX_WORKERS=10
-```
+## Operational Characteristics
 
-### Queue Configuration
+- Throughput and latency characteristics are measured and reported in `PERFORMANCE_REPORT.md` and summarized in `README.md`.
+- Internally, performance is driven by priority-aware fetching, batching, and minimized contention in the driver.
 
-```php
-$config = [
-    'memory_limit' => 50 * 1024 * 1024, // 50MB
-    'max_jobs_per_worker' => 1000,
-    'worker_timeout' => 3600, // 1 hour
-    'max_workers' => 10,
-    'compression_enabled' => true,
-    'encryption_enabled' => true,
-];
-```
+## Security Internals
 
-## Job Types Supported
-
-- **Synchronous Jobs**: Immediate execution
-- **Asynchronous Jobs**: Background processing
-- **Scheduled Jobs**: Delayed execution
-- **Recurring Jobs**: Interval-based execution
-- **Batch Jobs**: Bulk operations
-- **Chain Jobs**: Sequential dependencies
-- **Parallel Jobs**: Concurrent execution
-
-## Performance Characteristics
-
-- **Throughput**: 10K+ jobs per minute per worker
-- **Latency**: <10ms for job queuing
-- **Memory Usage**: <50MB per worker
-- **Payload Size**: Up to 1MB with compression
-- **Worker Startup**: <1 second
-
-## Security Features
-
-- **Payload Encryption**: AES-256-GCM encryption
-- **Compression**: Automatic compression for large payloads
-- **Input Validation**: Comprehensive input sanitization
-- **SQL Injection Protection**: Prepared statements
-- **Memory Protection**: Memory limit enforcement
+- Payload encryption: AES-256-GCM via `TaskQueue\Support\Encryption` with per-payload IV and auth tag.
+- Compression: Automatic for payloads >1KB via `TaskQueue\Support\Compression`.
+- Input validation and prepared statements enforced in drivers to prevent injection.
+- Memory protection: worker memory watchdog triggers recycling.
 
 ## Monitoring & Observability
 
-- **Real-time Logging**: Structured logging with Monolog
-- **Worker Status**: Process ID, memory usage, job counts
-- **Queue Statistics**: Job counts by state, average priority
-- **Performance Metrics**: Processing time, success/failure rates
-- **Health Checks**: Worker heartbeat monitoring
+- Structured logging with Monolog across manager and workers.
+- Worker health: heartbeat, PID tracking, memory usage, job throughput.
+- Queue statistics: counts by state and priority; performance metrics surfaced via dashboard APIs.
 
 ## Error Handling
 
-- **Graceful Degradation**: Continues operation under high load
-- **Retry Mechanisms**: Exponential backoff for failed jobs
-- **Dead Letter Queue**: Failed jobs preserved for inspection
-- **Signal Handling**: Graceful shutdown on termination signals
-- **Memory Management**: Automatic worker recycling on memory limits
+- Graceful degradation under load with backpressure and bounded retries.
+- Exponential backoff with jitter; circuit breakers around flaky dependencies.
+- Dead-letter retention for inspection and manual intervention.
+- Signal handling for graceful shutdown (SIGTERM, SIGINT, SIGUSR1/2).
+- Automatic worker recycling on memory thresholds.
 
 ## Database Schema
 
@@ -245,44 +108,36 @@ CREATE INDEX idx_created_at ON job_queue (created_at);
 CREATE INDEX idx_state ON job_queue (state);
 ```
 
-## Future Enhancements (Milestones 2-4)
+## Status & Features
 
-### Milestone 2: Advanced Scheduling & Workflow Engine
+High-level status, milestones, and feature summaries are maintained in `README.md`.
 
-- [ ] Cron-like scheduling with natural language parsing
-- [ ] Recurring job management with timezone support
-- [ ] Job rate limiting and throttling mechanisms
-- [ ] Conditional job execution based on system state
+## 🚀 Future Enhancements & Roadmap
 
-### Milestone 3: Distributed Processing & Load Balancing
+### Phase 5: Enterprise Integration
 
-- [ ] Worker node discovery and specialization
-- [ ] Load balancing across multiple workers
-- [ ] Dynamic worker scaling based on queue depth
-- [ ] Resource quotas and optimization algorithms
-- [ ] Idempotency and network partition handling
+- [ ] Kubernetes operator for container orchestration
+- [ ] Prometheus metrics exporter
+- [ ] Grafana dashboard templates
+- [ ] Slack/Teams integration for notifications
+- [ ] Webhook support for external integrations
 
-### Milestone 4: Monitoring & Management Dashboard
+### Phase 6: Advanced Analytics
 
-- [ ] Web-based dashboard for queue management
-- [ ] Real-time job processing metrics
-- [ ] Bulk job operations (retry, cancel, prioritize)
-- [ ] Job search and filtering capabilities
-- [ ] Configurable alerts and notifications
+- [ ] Machine learning for job failure prediction
+- [ ] Anomaly detection in job processing patterns
+- [ ] Cost optimization recommendations
+- [ ] Performance trend analysis
+- [ ] Capacity planning tools
 
-## Contributing
+### Phase 7: Multi-tenancy
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Ensure all tests pass
-6. Submit a pull request
+- [ ] Tenant isolation and resource quotas
+- [ ] Per-tenant dashboards and monitoring
+- [ ] Tenant-specific job routing
+- [ ] Billing and usage tracking
+- [ ] API rate limiting per tenant
 
-## License
+## Contributing, License, and Support
 
-MIT License - see LICENSE file for details.
-
-## Support
-
-For issues and questions, please create an issue in the repository.
+Please see `README.md` for contribution guidelines, licensing, and support.
