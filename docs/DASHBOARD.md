@@ -40,9 +40,6 @@ A beautiful, real-time web dashboard for monitoring and managing the Task Queue 
 # Using CLI command (recommended)
 php worker dashboard:serve
 
-# Or using the standalone server
-php server
-
 # Custom host and port
 php worker dashboard:serve --host=0.0.0.0 --port=9000
 ```
@@ -282,7 +279,7 @@ php worker dashboard:serve --port=8080 --host=0.0.0.0
 ### **Common Issues**
 
 1. **Dashboard not loading**
-   - Check if server is running: `ps aux | grep php`
+   - Check if dashboard service is running: `ps aux | grep "dashboard:serve"`
    - Verify port is not in use: `netstat -tlnp | grep 8080`
    - Check firewall settings
 
