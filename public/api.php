@@ -16,6 +16,7 @@ use TaskQueue\Public\Actions\Recent;
 use TaskQueue\Public\ActionsRegistry;
 use TaskQueue\Public\Actions\JobDetails;
 use TaskQueue\Public\Actions\Performance;
+use TaskQueue\Public\Actions\Overview;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Public\Actions\CreateTestJobs;
 
@@ -44,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Build registry and register handlers
 $registry = new ActionsRegistry(new Logger('api-handlers'));
+$registry->register('overview', new Overview($manager));
 $registry->register('stats', new Stats($manager));
 $registry->register('failed', new Failed($manager));
 $registry->register('recent', new Recent($manager));

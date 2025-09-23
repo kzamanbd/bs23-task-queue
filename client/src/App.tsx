@@ -19,24 +19,24 @@ function App() {
         refreshData,
         createTestJobs,
         purgeQueue,
-        queues,
+        queues
     } = useDashboard();
 
     return (
-        <div className="bg-gray-50 text-gray-800 font-sans min-h-screen">
+        <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
             <Header />
-            
+
             <RefreshIndicator show={showRefreshIndicator} />
-            
-            <div className="max-w-7xl mx-auto px-8 py-8">
+
+            <div className="mx-auto max-w-7xl px-8 py-8">
                 <QuickActions
                     onRefresh={refreshData}
                     onCreateTestJobs={createTestJobs}
                     onPurgeQueue={purgeQueue}
                     isLoading={isLoading}
                 />
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+
+                <div className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     <StatCard
                         title="Pending Jobs"
                         count={totals.pending}
@@ -62,25 +62,19 @@ function App() {
                         isLoading={isLoading}
                     />
                 </div>
-                
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+                <div className="mb-8 grid grid-cols-1 gap-8 lg:grid-cols-2">
                     <QueueChart
                         pending={totals.pending}
                         processing={totals.processing}
                         completed={totals.completed}
                         failed={totals.failed}
                     />
-                    
-                    <RecentJobs
-                        jobs={recentJobs}
-                        isLoading={isLoading}
-                        error={error}
-                    />
+                    <PerformanceChart data={performanceData} />
                 </div>
-                
-                <PerformanceChart data={performanceData} />
 
                 <div className="mt-8">
+                    <RecentJobs jobs={recentJobs} isLoading={isLoading} error={error} />
                     <QueuesSummary queues={queues} isLoading={isLoading} />
                 </div>
             </div>

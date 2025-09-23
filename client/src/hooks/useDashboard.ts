@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Job, QueueStats } from '../services/api';
-import { apiService } from '../services/api';
+import type { DashboardResponse, Job, QueueStats } from '../services/api';
+import {
+    createTestJobs as apiCreateTestJobs,
+    purgeQueue as apiPurgeQueue,
+    getDashboard
+} from '../services/api';
 
 interface PerformanceDataPoint {
     time: string;
@@ -41,7 +45,7 @@ export const useDashboard = () => {
         queues: [],
         isLoading: true,
         error: null,
-        lastUpdated: null,
+        lastUpdated: null
     });
 
     const [showRefreshIndicator, setShowRefreshIndicator] = useState(false);
@@ -54,7 +58,7 @@ export const useDashboard = () => {
                 pending: totals.pending + (queueStats.by_state.pending || 0),
                 processing: totals.processing + (queueStats.by_state.processing || 0),
                 completed: totals.completed + (queueStats.by_state.completed || 0),
-                failed: totals.failed + (queueStats.by_state.failed || 0),
+                failed: totals.failed + (queueStats.by_state.failed || 0)
             }),
             { pending: 0, processing: 0, completed: 0, failed: 0 }
         );
@@ -62,25 +66,20 @@ export const useDashboard = () => {
 
     const fetchData = useCallback(async (showIndicator = false) => {
         try {
-            setState(prev => ({ ...prev, error: null }));
+            setState((prev) => ({ ...prev, error: null }));
 
-            const [stats, recentJobs, performance, queues] = await Promise.all([
-                apiService.getStats(),
-                apiService.getRecentJobs(20),
-                apiService.getPerformanceMetrics(),
-                apiService.getQueues(),
-            ]);
+            const dashboard: DashboardResponse = await getDashboard(20);
 
-            setState(prev => {
+            setState((prev) => {
                 const newPerformanceData = [...prev.performanceData];
-                
+
                 // Add new performance data point
                 const now = new Date().toLocaleTimeString();
                 newPerformanceData.push({
                     time: now,
-                    total: performance.total_jobs,
-                    pending: performance.pending,
-                    processing: performance.processing,
+                    total: dashboard.performance.total_jobs,
+                    pending: dashboard.performance.pending,
+                    processing: dashboard.performance.processing
                 });
 
                 // Keep only last 20 data points
@@ -90,12 +89,12 @@ export const useDashboard = () => {
 
                 return {
                     ...prev,
-                    stats,
-                    recentJobs,
+                    stats: dashboard.stats,
+                    recentJobs: dashboard.recent,
                     performanceData: newPerformanceData,
-                    queues,
+                    queues: dashboard.queues,
                     isLoading: false,
-                    lastUpdated: new Date(),
+                    lastUpdated: new Date()
                 };
             });
 
@@ -104,10 +103,10 @@ export const useDashboard = () => {
             }
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
-            setState(prev => ({
+            setState((prev) => ({
                 ...prev,
                 error: error instanceof Error ? error.message : 'Failed to fetch data',
-                isLoading: false,
+                isLoading: false
             }));
         }
     }, []);
@@ -118,7 +117,7 @@ export const useDashboard = () => {
 
     const createTestJobs = useCallback(async () => {
         try {
-            const result = await apiService.createTestJobs(100, 'default', 5);
+            const result = await apiCreateTestJobs(100, 'default', 5);
             if (result.success) {
                 alert(`Created ${result.count} test jobs successfully!`);
                 fetchData(true);
@@ -126,27 +125,40 @@ export const useDashboard = () => {
                 alert('Error creating test jobs');
             }
         } catch (error) {
-            alert('Error creating test jobs: ' + (error instanceof Error ? error.message : 'Unknown error'));
+            alert(
+                'Error creating test jobs: ' +
+                    (error instanceof Error ? error.message : 'Unknown error')
+            );
         }
     }, [fetchData]);
 
-    const purgeQueue = useCallback(async (queueName: string) => {
-        if (!confirm(`Are you sure you want to purge the "${queueName}" queue? This action cannot be undone.`)) {
-            return;
-        }
-
-        try {
-            const result = await apiService.purgeQueue(queueName);
-            if (result.success) {
-                alert(`Queue "${queueName}" purged successfully!`);
-                fetchData(true);
-            } else {
-                alert('Error purging queue');
+    const purgeQueue = useCallback(
+        async (queueName: string) => {
+            if (
+                !confirm(
+                    `Are you sure you want to purge the "${queueName}" queue? This action cannot be undone.`
+                )
+            ) {
+                return;
             }
-        } catch (error) {
-            alert('Error purging queue: ' + (error instanceof Error ? error.message : 'Unknown error'));
-        }
-    }, [fetchData]);
+
+            try {
+                const result = await apiPurgeQueue(queueName);
+                if (result.success) {
+                    alert(`Queue "${queueName}" purged successfully!`);
+                    fetchData(true);
+                } else {
+                    alert('Error purging queue');
+                }
+            } catch (error) {
+                alert(
+                    'Error purging queue: ' +
+                        (error instanceof Error ? error.message : 'Unknown error')
+                );
+            }
+        },
+        [fetchData]
+    );
 
     // Initial data fetch
     useEffect(() => {
@@ -170,6 +182,7 @@ export const useDashboard = () => {
         showRefreshIndicator,
         refreshData,
         createTestJobs,
-        purgeQueue,
+        purgeQueue
     };
 };
+
