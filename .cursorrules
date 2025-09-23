@@ -1,0 +1,18 @@
+# Cursor Rules
+
+[filenames]
+# Enforce kebab-case for React components and pages
+patterns = [
+  "client/src/components/**/*.tsx",
+  "client/src/pages/**/*.tsx",
+  "client/src/app.tsx"
+]
+case = "kebab"
+
+[imports]
+# Encourage imports to follow kebab-case filenames
+normalize_paths = true
+
+[editor]
+# Prefer creating new React files in kebab-case
+default_case = "kebab"
