@@ -39,7 +39,7 @@ const Modal = ({
                     leave="ease-in duration-200"
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0">
-                    <DialogBackdrop className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+                    <DialogBackdrop className="fixed inset-0 z-[8888] bg-black/30 backdrop-blur-sm" />
                 </TransitionChild>
 
                 {/* Full-screen container to center the panel */}
