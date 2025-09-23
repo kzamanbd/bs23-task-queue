@@ -10,8 +10,8 @@ import {
 } from 'lucide-react';
 import React, { useState } from 'react';
 import type { Job } from '../../services/api';
-import Card from '../shared/Card';
-import JobDetailsModal from './JobDetailsModal';
+import Card from '../shared/card-ui';
+import JobDetailsModal from './job-details-modal';
 
 interface RecentJobsProps {
     jobs: Job[];

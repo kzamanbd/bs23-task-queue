@@ -1,6 +1,6 @@
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import React from 'react';
-import Modal from '../shared/Modal';
+import Modal from '../shared/modal-ui';
 
 interface ConfirmModalProps {
     isOpen: boolean;

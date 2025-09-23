@@ -1,11 +1,11 @@
 import { CheckCircle, Clock, XCircle, Zap } from 'lucide-react';
 import React from 'react';
-import PerformanceChart from '../components/dashboard/PerformanceChart';
-import QueueChart from '../components/dashboard/QueueChart';
-import QueuesSummary from '../components/dashboard/QueuesSummary';
-import QuickActions from '../components/dashboard/QuickActions';
-import RecentJobs from '../components/dashboard/RecentJobs';
-import StatCard from '../components/dashboard/StatCard';
+import PerformanceChart from '../components/dashboard/performance-chart';
+import QuickActions from '../components/dashboard/quick-actions';
+import StatCard from '../components/dashboard/stat-card';
+import RecentJobs from '../components/jobs/recent-jobs';
+import QueueChart from '../components/queues/queue-chart';
+import QueuesSummary from '../components/queues/queues-summary';
 import { useOverview } from '../hooks/useOverview';
 
 const Overview: React.FC = () => {

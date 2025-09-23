@@ -1,5 +1,5 @@
-import JobDetailsModal from '@/components/dashboard/JobDetailsModal';
-import Card from '@/components/shared/Card';
+import JobDetailsModal from '@/components/jobs/job-details-modal';
+import Card from '@/components/shared/card-ui';
 import { useJobs } from '@/hooks/useJobs';
 import {
     AlertTriangle,

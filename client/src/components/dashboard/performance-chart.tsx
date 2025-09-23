@@ -1,4 +1,4 @@
-import Card from '@/components/shared/Card';
+import Card from '@/components/shared/card-ui';
 import { TrendingUp } from 'lucide-react';
 import React from 'react';
 import Chart from 'react-apexcharts';

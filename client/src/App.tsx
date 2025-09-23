@@ -1,10 +1,10 @@
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
-import Header from './components/layout/Header';
-import Navigation from './components/layout/Navigation';
-import JobsTable from './pages/JobsTable';
-import Overview from './pages/Overview';
-import QueueManagement from './pages/QueueManagement';
-import ScheduledJobsList from './pages/ScheduledJobsList';
+import Header from './components/layout/header';
+import Navigation from './components/layout/navigation';
+import JobsTable from './pages/jobs-table';
+import Overview from './pages/overview-stats';
+import QueueManagement from './pages/queue-management';
+import ScheduledJobsList from './pages/scheduled-jobs-list';
 
 // Layout component that wraps all pages
 function Layout() {

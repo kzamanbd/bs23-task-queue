@@ -2,7 +2,7 @@ import { Calendar, Clock, Play, Settings, Tag, Trash2, Zap } from 'lucide-react'
 import React, { useState } from 'react';
 import type { ScheduledJob } from '../../services/api';
 import { deleteScheduledJob, runScheduledJob } from '../../services/api';
-import Modal from '../shared/Modal';
+import Modal from '../shared/modal-ui';
 
 interface ScheduledJobDetailsModalProps {
     isOpen: boolean;

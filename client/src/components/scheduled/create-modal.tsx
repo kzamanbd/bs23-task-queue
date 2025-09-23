@@ -1,7 +1,7 @@
 import { AlertCircle, Calendar, Save } from 'lucide-react';
 import React, { useState } from 'react';
 import { createScheduledJob } from '../../services/api';
-import Modal from '../shared/Modal';
+import Modal from '../shared/modal-ui';
 
 interface CreateScheduledJobModalProps {
     isOpen: boolean;

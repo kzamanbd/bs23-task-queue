@@ -13,10 +13,10 @@ import {
     Zap
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import ConfirmModal from '../components/dashboard/ConfirmModal';
-import CreateScheduledJobModal from '../components/dashboard/CreateScheduledJobModal';
-import ScheduledJobDetailsModal from '../components/dashboard/ScheduledJobDetailsModal';
-import Card from '../components/shared/Card';
+import ConfirmModal from '../components/dashboard/confirm-modal';
+import CreateScheduledJobModal from '../components/scheduled/create-modal';
+import ScheduledJobDetailsModal from '../components/scheduled/details-modal';
+import Card from '../components/shared/card-ui';
 
 interface ScheduledJobsListProps {
     onRefresh?: () => void;

@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { getJobDetails, retryFailedJob } from '../../services/api';
-import Modal from '../shared/Modal';
+import Modal from '../shared/modal-ui';
 
 interface JobDetailsModalProps {
     jobId: string;

@@ -1,6 +1,6 @@
 import { BarChart3, Settings, Zap } from 'lucide-react';
 import React, { useState } from 'react';
-import Modal from '../shared/Modal';
+import Modal from '../shared/modal-ui';
 
 interface QueueSettingsModalProps {
     isOpen: boolean;

@@ -12,9 +12,9 @@ import {
     Zap
 } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
-import ConfirmModal from '../components/dashboard/ConfirmModal';
-import QueueSettingsModal from '../components/dashboard/QueueSettingsModal';
-import Card from '../components/shared/Card';
+import ConfirmModal from '../components/dashboard/confirm-modal';
+import QueueSettingsModal from '../components/queues/queue-settings-modal';
+import Card from '../components/shared/card-ui';
 import type { Job } from '../services/api';
 import { getOverview, purgeQueue } from '../services/api';
 
