@@ -22,15 +22,15 @@ interface QueueDriverInterface
 
     public function purge(string $queue): void;
 
-    public function getFailedJobs(string $queue = null): array;
+    public function getFailedJobs(?string $queue = null): array;
 
     public function retryFailedJob(string $jobId): bool;
 
     public function getJobById(string $jobId): ?JobInterface;
 
-    public function getJobsByState(string $state, string $queue = null, int $limit = 100): array;
+    public function getJobsByState(string $state, ?string $queue = null, int $limit = 100): array;
 
-    public function getQueueStats(string $queue = null): array;
+    public function getQueueStats(?string $queue = null): array;
 
     public function getStats(): array;
 

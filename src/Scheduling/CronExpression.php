@@ -29,7 +29,7 @@ class CronExpression
     private function parseExpression(): void
     {
         $parts = explode(' ', $this->expression);
-        
+
         if (count($parts) !== 5) {
             throw new \InvalidArgumentException('Cron expression must have exactly 5 fields');
         }
@@ -62,20 +62,20 @@ class CronExpression
         if (strpos($part, '/') !== false) {
             [$range, $step] = explode('/', $part, 2);
             $step = (int) $step;
-            
+
             if ($range === '*') {
                 $range = $min . '-' . $max;
             }
-            
+
             [$start, $end] = explode('-', $range, 2);
             $start = (int) $start;
             $end = (int) $end;
-            
+
             $values = [];
             for ($i = $start; $i <= $end; $i += $step) {
                 $values[] = $i;
             }
-            
+
             return $values;
         }
 
@@ -87,15 +87,15 @@ class CronExpression
         return [(int) $part];
     }
 
-    public function isDue(\DateTimeInterface $date = null): bool
+    public function isDue(?\DateTimeInterface $date = null): bool
     {
         $date = $date ?? new \DateTime();
-        
+
         return $this->isMinuteDue($date) &&
-               $this->isHourDue($date) &&
-               $this->isDayDue($date) &&
-               $this->isMonthDue($date) &&
-               $this->isDayOfWeekDue($date);
+            $this->isHourDue($date) &&
+            $this->isDayDue($date) &&
+            $this->isMonthDue($date) &&
+            $this->isDayOfWeekDue($date);
     }
 
     private function isMinuteDue(\DateTimeInterface $date): bool
@@ -123,7 +123,7 @@ class CronExpression
         return in_array((int) $date->format('w'), $this->fields['dayofweek'], true);
     }
 
-    public function getNextRunDate(\DateTimeInterface $date = null): \DateTime
+    public function getNextRunDate(?\DateTimeInterface $date = null): \DateTime
     {
         $date = $date ?? new \DateTime();
         $next = clone $date;
@@ -131,7 +131,7 @@ class CronExpression
 
         while (!$this->isDue($next)) {
             $next->modify('+1 minute');
-            
+
             // Prevent infinite loops
             if ($next->getTimestamp() - $date->getTimestamp() > 86400 * 365) {
                 throw new \RuntimeException('Unable to find next run date within a year');
