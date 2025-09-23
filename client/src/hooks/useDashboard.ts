@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { DashboardResponse, Job, QueueStats } from '../services/api';
+import type { Job, OverviewResponse, QueueStats } from '../services/api';
 import {
     createTestJobs as apiCreateTestJobs,
     purgeQueue as apiPurgeQueue,
-    getDashboard
+    getOverview
 } from '../services/api';
 
 interface PerformanceDataPoint {
@@ -37,6 +37,9 @@ interface DashboardState {
     lastUpdated: Date | null;
 }
 
+const PERFORMANCE_STORAGE_KEY = 'dashboard.performanceData.v1';
+const PERFORMANCE_MAX_POINTS = 20;
+
 export const useDashboard = () => {
     const [state, setState] = useState<DashboardState>({
         stats: null,
@@ -49,6 +52,35 @@ export const useDashboard = () => {
     });
 
     const [showRefreshIndicator, setShowRefreshIndicator] = useState(false);
+
+    // Hydrate performance data from localStorage on first mount
+    useEffect(() => {
+        try {
+            const raw = localStorage.getItem(PERFORMANCE_STORAGE_KEY);
+            if (raw) {
+                const parsed = JSON.parse(raw) as PerformanceDataPoint[];
+                if (Array.isArray(parsed)) {
+                    setState((prev) => ({
+                        ...prev,
+                        performanceData: parsed.slice(-PERFORMANCE_MAX_POINTS)
+                    }));
+                }
+            }
+        } catch (_) {
+            // ignore malformed localStorage
+        }
+    }, []);
+
+    const savePerformanceToStorage = useCallback((points: PerformanceDataPoint[]) => {
+        try {
+            localStorage.setItem(
+                PERFORMANCE_STORAGE_KEY,
+                JSON.stringify(points.slice(-PERFORMANCE_MAX_POINTS))
+            );
+        } catch (_) {
+            // storage may be unavailable; fail silently
+        }
+    }, []);
 
     const calculateTotals = useCallback((stats: QueueStats | null) => {
         if (!stats) return { pending: 0, processing: 0, completed: 0, failed: 0 };
@@ -64,52 +96,58 @@ export const useDashboard = () => {
         );
     }, []);
 
-    const fetchData = useCallback(async (showIndicator = false) => {
-        try {
-            setState((prev) => ({ ...prev, error: null }));
+    const fetchData = useCallback(
+        async (showIndicator = false) => {
+            try {
+                setState((prev) => ({ ...prev, error: null }));
 
-            const dashboard: DashboardResponse = await getDashboard(20);
+                const overview: OverviewResponse = await getOverview(20);
 
-            setState((prev) => {
-                const newPerformanceData = [...prev.performanceData];
+                setState((prev) => {
+                    const newPerformanceData = [...prev.performanceData];
 
-                // Add new performance data point
-                const now = new Date().toLocaleTimeString();
-                newPerformanceData.push({
-                    time: now,
-                    total: dashboard.performance.total_jobs,
-                    pending: dashboard.performance.pending,
-                    processing: dashboard.performance.processing
+                    // Add new performance data point
+                    const now = new Date().toLocaleTimeString();
+                    newPerformanceData.push({
+                        time: now,
+                        total: overview.performance.total_jobs,
+                        pending: overview.performance.pending,
+                        processing: overview.performance.processing
+                    });
+
+                    // Keep only last N data points
+                    if (newPerformanceData.length > PERFORMANCE_MAX_POINTS) {
+                        newPerformanceData.shift();
+                    }
+
+                    // Persist updated performance data
+                    savePerformanceToStorage(newPerformanceData);
+
+                    return {
+                        ...prev,
+                        stats: overview.stats,
+                        recentJobs: overview.recent,
+                        performanceData: newPerformanceData,
+                        queues: overview.queues,
+                        isLoading: false,
+                        lastUpdated: new Date()
+                    };
                 });
 
-                // Keep only last 20 data points
-                if (newPerformanceData.length > 20) {
-                    newPerformanceData.shift();
+                if (showIndicator) {
+                    setShowRefreshIndicator(true);
                 }
-
-                return {
+            } catch (error) {
+                console.error('Error fetching dashboard data:', error);
+                setState((prev) => ({
                     ...prev,
-                    stats: dashboard.stats,
-                    recentJobs: dashboard.recent,
-                    performanceData: newPerformanceData,
-                    queues: dashboard.queues,
-                    isLoading: false,
-                    lastUpdated: new Date()
-                };
-            });
-
-            if (showIndicator) {
-                setShowRefreshIndicator(true);
+                    error: error instanceof Error ? error.message : 'Failed to fetch data',
+                    isLoading: false
+                }));
             }
-        } catch (error) {
-            console.error('Error fetching dashboard data:', error);
-            setState((prev) => ({
-                ...prev,
-                error: error instanceof Error ? error.message : 'Failed to fetch data',
-                isLoading: false
-            }));
-        }
-    }, []);
+        },
+        [savePerformanceToStorage]
+    );
 
     const refreshData = useCallback(() => {
         fetchData(true);
