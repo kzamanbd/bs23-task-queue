@@ -19,6 +19,7 @@ use TaskQueue\Public\Actions\Performance;
 use TaskQueue\Public\Actions\Overview;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Public\Actions\CreateTestJobs;
+use TaskQueue\Public\Actions\ScheduledJobs;
 
 // Setup database connection
 $pdo = new PDO('sqlite:' . __DIR__ . '/../storage/queue.db');
@@ -55,6 +56,7 @@ $registry->register('create_test_jobs', new CreateTestJobs($manager));
 $registry->register('job_details', new JobDetails($manager));
 $registry->register('queues', new Queues($manager));
 $registry->register('performance', new Performance($manager));
+$registry->register('scheduled_jobs', new ScheduledJobs($manager));
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 

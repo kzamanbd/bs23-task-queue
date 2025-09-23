@@ -1,15 +1,33 @@
-import { AlertTriangle, CheckCircle, Clock, FileText, XCircle, Zap } from 'lucide-react';
-import React from 'react';
+import {
+    AlertTriangle,
+    CheckCircle,
+    Clock,
+    Eye,
+    FileText,
+    RefreshCw,
+    XCircle,
+    Zap
+} from 'lucide-react';
+import React, { useState } from 'react';
 import type { Job } from '../../services/api';
-import Card from '../Card';
+import Card from '../shared/Card';
+import JobDetailsModal from './JobDetailsModal';
 
 interface RecentJobsProps {
     jobs: Job[];
     isLoading?: boolean;
     error?: string | null;
+    onRefresh?: () => void;
 }
 
-const RecentJobs: React.FC<RecentJobsProps> = ({ jobs, isLoading = false, error = null }) => {
+const RecentJobs: React.FC<RecentJobsProps> = ({
+    jobs,
+    isLoading = false,
+    error = null,
+    onRefresh
+}) => {
+    const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const stateColors = {
         pending: 'bg-amber-100 text-amber-800 border-amber-200',
         processing: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -22,6 +40,20 @@ const RecentJobs: React.FC<RecentJobsProps> = ({ jobs, isLoading = false, error 
         processing: <Zap className="h-5 w-5" />,
         completed: <CheckCircle className="h-5 w-5" />,
         failed: <XCircle className="h-5 w-5" />
+    };
+
+    const handleViewDetails = (jobId: string) => {
+        setSelectedJobId(jobId);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedJobId(null);
+    };
+
+    const handleJobRetried = () => {
+        onRefresh?.();
     };
 
     if (error) {
@@ -166,11 +198,44 @@ const RecentJobs: React.FC<RecentJobsProps> = ({ jobs, isLoading = false, error 
                                         </div>
                                     </div>
                                 </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => handleViewDetails(job.id)}
+                                        className="flex items-center gap-1 rounded-lg bg-indigo-100 px-3 py-2 text-sm font-medium text-indigo-700 transition-colors hover:bg-indigo-200"
+                                        title="View job details">
+                                        <Eye className="h-4 w-4" />
+                                        Details
+                                    </button>
+                                    {job.state === 'failed' && (
+                                        <button
+                                            onClick={() => {
+                                                // Handle retry directly
+                                                handleViewDetails(job.id);
+                                            }}
+                                            className="flex items-center gap-1 rounded-lg bg-green-100 px-3 py-2 text-sm font-medium text-green-700 transition-colors hover:bg-green-200"
+                                            title="Retry failed job">
+                                            <RefreshCw className="h-4 w-4" />
+                                            Retry
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         );
                     })}
                 </div>
             </div>
+
+            {/* Job Details Modal */}
+            {selectedJobId && (
+                <JobDetailsModal
+                    jobId={selectedJobId}
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onJobRetried={handleJobRetried}
+                />
+            )}
         </Card>
     );
 };

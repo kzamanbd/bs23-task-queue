@@ -3,7 +3,6 @@ import type { Job, QueueStats } from '../services/api';
 import {
     createTestJobs as apiCreateTestJobs,
     purgeQueue as apiPurgeQueue,
-    getAllJobs,
     getOverview
 } from '../services/api';
 
@@ -28,10 +27,9 @@ interface QueueSummaryItem {
     newest_job: string | null;
 }
 
-interface DashboardState {
+interface OverviewState {
     stats: QueueStats | null;
     recentJobs: Job[];
-    allJobs: Job[];
     performanceData: PerformanceDataPoint[];
     queues: QueueSummaryItem[];
     isLoading: boolean;
@@ -42,11 +40,10 @@ interface DashboardState {
 const PERFORMANCE_STORAGE_KEY = 'dashboard.performanceData.v1';
 const PERFORMANCE_MAX_POINTS = 20;
 
-export const useDashboard = () => {
-    const [state, setState] = useState<DashboardState>({
+export const useOverview = () => {
+    const [state, setState] = useState<OverviewState>({
         stats: null,
         recentJobs: [],
-        allJobs: [],
         performanceData: [],
         queues: [],
         isLoading: true,
@@ -56,7 +53,6 @@ export const useDashboard = () => {
 
     const [showRefreshIndicator, setShowRefreshIndicator] = useState(false);
 
-    // Hydrate performance data from localStorage on first mount
     useEffect(() => {
         try {
             const raw = localStorage.getItem(PERFORMANCE_STORAGE_KEY);
@@ -69,9 +65,7 @@ export const useDashboard = () => {
                     }));
                 }
             }
-        } catch (_) {
-            // ignore malformed localStorage
-        }
+        } catch (_) {}
     }, []);
 
     const savePerformanceToStorage = useCallback((points: PerformanceDataPoint[]) => {
@@ -80,14 +74,11 @@ export const useDashboard = () => {
                 PERFORMANCE_STORAGE_KEY,
                 JSON.stringify(points.slice(-PERFORMANCE_MAX_POINTS))
             );
-        } catch (_) {
-            // storage may be unavailable; fail silently
-        }
+        } catch (_) {}
     }, []);
 
     const calculateTotals = useCallback((stats: QueueStats | null) => {
         if (!stats) return { pending: 0, processing: 0, completed: 0, failed: 0 };
-
         return Object.values(stats).reduce(
             (totals, queueStats) => ({
                 pending: totals.pending + (queueStats.by_state.pending || 0),
@@ -104,15 +95,10 @@ export const useDashboard = () => {
             try {
                 setState((prev) => ({ ...prev, error: null }));
 
-                const [overview, allJobs] = await Promise.all([
-                    getOverview(20),
-                    getAllJobs({ limit: 100 })
-                ]);
+                const [overview] = await Promise.all([getOverview(20)]);
 
                 setState((prev) => {
                     const newPerformanceData = [...prev.performanceData];
-
-                    // Add new performance data point
                     const now = new Date().toLocaleTimeString();
                     newPerformanceData.push({
                         time: now,
@@ -120,20 +106,15 @@ export const useDashboard = () => {
                         pending: overview.performance.pending,
                         processing: overview.performance.processing
                     });
-
-                    // Keep only last N data points
                     if (newPerformanceData.length > PERFORMANCE_MAX_POINTS) {
                         newPerformanceData.shift();
                     }
-
-                    // Persist updated performance data
                     savePerformanceToStorage(newPerformanceData);
 
                     return {
                         ...prev,
                         stats: overview.stats,
                         recentJobs: overview.recent,
-                        allJobs: allJobs,
                         performanceData: newPerformanceData,
                         queues: overview.queues,
                         isLoading: false,
@@ -141,11 +122,9 @@ export const useDashboard = () => {
                     };
                 });
 
-                if (showIndicator) {
-                    setShowRefreshIndicator(true);
-                }
+                if (showIndicator) setShowRefreshIndicator(true);
             } catch (error) {
-                console.error('Error fetching dashboard data:', error);
+                console.error('Error fetching overview data:', error);
                 setState((prev) => ({
                     ...prev,
                     error: error instanceof Error ? error.message : 'Failed to fetch data',
@@ -186,7 +165,6 @@ export const useDashboard = () => {
             ) {
                 return;
             }
-
             try {
                 const result = await apiPurgeQueue(queueName);
                 if (result.success) {
@@ -205,17 +183,14 @@ export const useDashboard = () => {
         [fetchData]
     );
 
-    // Initial data fetch
     useEffect(() => {
         fetchData();
     }, []);
 
-    // Auto-refresh every 5 seconds
     useEffect(() => {
         const interval = setInterval(() => {
             fetchData();
         }, 5000);
-
         return () => clearInterval(interval);
     }, [fetchData]);
 
@@ -230,4 +205,6 @@ export const useDashboard = () => {
         purgeQueue
     };
 };
+
+export type { PerformanceDataPoint };
 

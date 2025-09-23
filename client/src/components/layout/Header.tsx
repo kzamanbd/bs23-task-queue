@@ -19,7 +19,7 @@ const Header: React.FC = () => {
                     style={{ animationDelay: '2s' }}></div>
             </div>
 
-            <div className="relative z-10 py-12 text-white">
+            <div className="relative py-12 text-white">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col gap-6 text-center md:flex-row md:items-center md:justify-between md:text-left">
                         <div>

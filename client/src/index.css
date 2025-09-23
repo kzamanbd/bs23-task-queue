@@ -1,5 +1,27 @@
 @import 'tailwindcss';
 
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+    .dark *,
+    .dark ::after,
+    .dark ::before,
+    .dark ::backdrop,
+    .dark ::file-selector-button {
+        border-color: var(--color-gray-700, currentColor);
+    }
+
+    button:not(:disabled),
+    [role='button']:not(:disabled) {
+        @apply cursor-pointer;
+    }
+}
+
 /* Skeleton loading animation */
 @keyframes shimmer {
     0% {
@@ -25,3 +47,4 @@
     @apply bg-gradient-to-r from-gray-200 via-gray-300 to-gray-200 bg-[length:200px_100%];
     animation: shimmer 1.5s infinite;
 }
+

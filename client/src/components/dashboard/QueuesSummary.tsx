@@ -1,6 +1,6 @@
 import { BarChart3, Tag } from 'lucide-react';
 import React from 'react';
-import Card from '../Card';
+import Card from '../shared/Card';
 
 interface QueueSummaryItem {
     name: string;

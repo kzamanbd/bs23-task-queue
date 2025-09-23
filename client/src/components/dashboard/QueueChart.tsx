@@ -1,7 +1,7 @@
 import { BarChart3 } from 'lucide-react';
 import React from 'react';
 import Chart from 'react-apexcharts';
-import Card from '../Card';
+import Card from '../shared/Card';
 
 interface QueueChartProps {
     pending: number;

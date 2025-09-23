@@ -107,8 +107,106 @@ export async function retryFailedJob(jobId: string): Promise<{ success: boolean 
     return response.data;
 }
 
+export async function getJobDetails(jobId: string): Promise<any> {
+    const response = await api.get('/api.php', {
+        params: { action: 'job_details', job_id: jobId }
+    });
+    return response.data;
+}
+
 export async function getOverview(limit: number = 20): Promise<OverviewResponse> {
     const response = await api.get('/api.php', { params: { action: 'overview', limit } });
     return response.data as OverviewResponse;
+}
+
+export async function getAllJobs(
+    options: {
+        limit?: number;
+        state?: string;
+        queue?: string;
+    } = {}
+): Promise<Job[]> {
+    const params: any = { action: 'recent' };
+
+    if (options.limit) params.limit = options.limit.toString();
+    if (options.state) params.state = options.state;
+    if (options.queue) params.queue = options.queue;
+
+    const response = await api.get('/api.php', { params });
+    return response.data as Job[];
+}
+
+// Scheduled Jobs API
+export interface ScheduledJob {
+    id: string;
+    cron_expression: string;
+    next_run_at: string | null;
+    recurring: boolean;
+    expires_at: string | null;
+    created_at: string;
+    queue: string;
+    priority: number;
+    tags: string[];
+    payload: any;
+    is_active: boolean;
+}
+
+export interface ScheduledJobsResponse {
+    scheduled_jobs: ScheduledJob[];
+    count: number;
+}
+
+export async function getScheduledJobs(): Promise<ScheduledJobsResponse> {
+    const response = await api.get('/api.php', {
+        params: { action: 'scheduled_jobs', sub_action: 'list' }
+    });
+    return response.data;
+}
+
+export async function createScheduledJob(data: {
+    schedule: string;
+    job_class?: string;
+    payload?: string;
+    queue?: string;
+    priority?: number;
+    recurring?: boolean;
+    expires_at?: string;
+}): Promise<{ success: boolean; job_id: string; message: string }> {
+    const response = await api.post('/api.php', null, {
+        params: { action: 'scheduled_jobs', sub_action: 'create' },
+        data: new URLSearchParams({
+            schedule: data.schedule,
+            job_class: data.job_class || 'TaskQueue\\Jobs\\TestJob',
+            payload: data.payload || '{}',
+            queue: data.queue || 'default',
+            priority: (data.priority || 5).toString(),
+            recurring: data.recurring ? '1' : '0',
+            expires_at: data.expires_at || ''
+        }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
+}
+
+export async function deleteScheduledJob(
+    jobId: string
+): Promise<{ success: boolean; message: string }> {
+    const response = await api.post('/api.php', null, {
+        params: { action: 'scheduled_jobs', sub_action: 'delete' },
+        data: new URLSearchParams({ job_id: jobId }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
+}
+
+export async function runScheduledJob(
+    jobId: string
+): Promise<{ success: boolean; job_id: string; message: string }> {
+    const response = await api.post('/api.php', null, {
+        params: { action: 'scheduled_jobs', sub_action: 'run' },
+        data: new URLSearchParams({ job_id: jobId }),
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
 }
 

@@ -1,6 +1,6 @@
 import { Plus, RefreshCw, Trash2, Zap } from 'lucide-react';
 import React from 'react';
-import Card from '../Card';
+import Card from '../shared/Card';
 
 interface QuickActionsProps {
     onRefresh: () => void;
