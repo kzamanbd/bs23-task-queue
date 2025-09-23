@@ -5,7 +5,7 @@
 patterns = [
   "client/src/components/**/*.tsx",
   "client/src/pages/**/*.tsx",
-  "client/src/app.tsx"
+  "client/src/**/*.tsx",
 ]
 case = "kebab"
 
@@ -16,3 +16,18 @@ normalize_paths = true
 [editor]
 # Prefer creating new React files in kebab-case
 default_case = "kebab"
+
+# React Component Naming Rules
+[react_components]
+# Component files should use kebab-case
+# Example: user-profile.tsx, navigation-menu.tsx, data-table.tsx
+# Avoid: UserProfile.tsx, NavigationMenu.tsx, DataTable.tsx
+file_naming = "kebab-case"
+
+# Component export should use PascalCase (standard React convention)
+# Example: export default function UserProfile() {}
+component_export = "PascalCase"
+
+# Hook files should use kebab-case with 'use-' prefix
+# Example: use-user-data.ts, use-local-storage.ts
+hook_naming = "kebab-case"
