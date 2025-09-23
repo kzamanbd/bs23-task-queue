@@ -1,0 +1,34 @@
+{
+    "name": "task-queue",
+    "version": "1.0.0",
+    "description": "A powerful, enterprise-grade job queue and processing system built in PHP 8.2+ with PSR-4 standards. This system provides reliable background job processing, worker management, distributed processing, advanced scheduling, and real-time monitoring capabilities.",
+    "main": "client/dist/index.js",
+    "directories": {
+        "doc": "docs",
+        "test": "tests"
+    },
+    "workspaces": [
+        "client"
+    ],
+    "scripts": {
+        "dev": "concurrently \"npm run dev --workspace=client\" \"npm run queue:work\"",
+        "queue:work": "php worker queue:work",
+        "build": "npm run build --workspace=client",
+        "format": "npm run format --workspace=client",
+        "lint": "npm run lint --workspace=client"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/kzamanbd/bs23-task-queue.git"
+    },
+    "keywords": [],
+    "author": "<kzamanbd@gmail.com>",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/kzamanbd/bs23-task-queue/issues"
+    },
+    "homepage": "https://github.com/kzamanbd/bs23-task-queue#readme",
+    "devDependencies": {
+        "concurrently": "^9.2.1"
+    }
+}
