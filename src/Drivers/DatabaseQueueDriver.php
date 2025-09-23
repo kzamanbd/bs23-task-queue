@@ -53,7 +53,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
 
         $data = $job->toArray();
         $payload = json_encode($data['payload']);
-        
+
         if ($this->compressionEnabled && strlen($payload) > 1024) {
             $payload = Compression::compress($payload);
         }
@@ -157,7 +157,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
                 failed_at = ?,
                 exception = ?
                 WHERE id = ?";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             $job->getState(),
@@ -177,10 +177,10 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $sql = "DELETE FROM {$this->tableName} 
                 WHERE state = 'completed' 
                 AND completed_at < datetime('now', '-{$hoursOld} hours')";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute();
-        
+
         return $stmt->rowCount();
     }
 
@@ -191,7 +191,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $sql = "UPDATE {$this->tableName} 
                 SET state = ?, delay_seconds = ?, updated_at = ? 
                 WHERE id = ?";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([
             JobInterface::STATE_PENDING,
@@ -208,7 +208,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $sql = "SELECT COUNT(*) FROM {$this->tableName} WHERE queue_name = ? AND state = ?";
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute([$queue, JobInterface::STATE_PENDING]);
-        
+
         return (int) $stmt->fetchColumn();
     }
 
@@ -221,7 +221,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $stmt->execute([$queue]);
     }
 
-    public function getFailedJobs(string $queue = null): array
+    public function getFailedJobs(?string $queue = null): array
     {
         $this->ensureConnected();
 
@@ -253,7 +253,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         $sql = "UPDATE {$this->tableName} 
                 SET state = ?, attempts = 0, failed_at = NULL, updated_at = ? 
                 WHERE id = ? AND state = ?";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $result = $stmt->execute([
             JobInterface::STATE_PENDING,
@@ -277,7 +277,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         return $row ? $this->rowToJob($row) : null;
     }
 
-    public function getJobsByState(string $state, string $queue = null, int $limit = 100): array
+    public function getJobsByState(string $state, ?string $queue = null, int $limit = 100): array
     {
         $this->ensureConnected();
 
@@ -303,7 +303,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         return $jobs;
     }
 
-    public function getQueueStats(string $queue = null): array
+    public function getQueueStats(?string $queue = null): array
     {
         $this->ensureConnected();
 
@@ -331,7 +331,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
         while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $queueName = $row['queue_name'];
             $state = $row['state'];
-            
+
             if (!isset($stats[$queueName])) {
                 $stats[$queueName] = [
                     'total_jobs' => 0,
@@ -391,7 +391,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
     private function rowToJob(array $row): JobInterface
     {
         $payload = $this->encryption->decrypt($row['payload']);
-        
+
         if ($this->compressionEnabled && Compression::isCompressed($payload)) {
             $payload = Compression::decompress($payload);
         }

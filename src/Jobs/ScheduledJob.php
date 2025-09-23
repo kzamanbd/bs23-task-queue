@@ -18,10 +18,10 @@ class ScheduledJob extends AbstractJob
     public function __construct(array $payload = [], array $options = [])
     {
         parent::__construct($payload, $options);
-        
+
         $this->isRecurring = $options['recurring'] ?? true;
         $this->expiresAt = $options['expires_at'] ?? null;
-        
+
         if (isset($options['cron_expression'])) {
             $this->setCronExpression($options['cron_expression']);
         } elseif (isset($options['schedule'])) {
@@ -45,7 +45,7 @@ class ScheduledJob extends AbstractJob
             // Fall back to cron expression
             $this->cronExpression = new CronExpression($schedule);
         }
-        
+
         $this->calculateNextRun();
     }
 
@@ -84,40 +84,40 @@ class ScheduledJob extends AbstractJob
         $this->expiresAt = $expiresAt;
     }
 
-    public function isDue(\DateTimeInterface $date = null): bool
+    public function isDue(?\DateTimeInterface $date = null): bool
     {
         $date = $date ?? new \DateTime();
-        
+
         // Check if job has expired
         if ($this->expiresAt && $date > $this->expiresAt) {
             return false;
         }
-        
+
         // Check if job is due according to cron expression
         return $this->cronExpression->isDue($date);
     }
 
-    public function isExpired(\DateTimeInterface $date = null): bool
+    public function isExpired(?\DateTimeInterface $date = null): bool
     {
         $date = $date ?? new \DateTime();
         return $this->expiresAt && $date > $this->expiresAt;
     }
 
-    public function calculateNextRun(\DateTimeInterface $date = null): void
+    public function calculateNextRun(?\DateTimeInterface $date = null): void
     {
         if (!$this->isRecurring) {
             $this->nextRunAt = null;
             return;
         }
-        
+
         $date = $date ?? new \DateTime();
         $this->nextRunAt = $this->cronExpression->getNextRunDate($date);
     }
 
-    public function markAsRun(\DateTimeInterface $date = null): void
+    public function markAsRun(?\DateTimeInterface $date = null): void
     {
         $this->lastRunAt = $date ?? new \DateTime();
-        
+
         if ($this->isRecurring) {
             $this->calculateNextRun($this->lastRunAt);
         } else {
@@ -134,12 +134,12 @@ class ScheduledJob extends AbstractJob
     {
         // Mark as run before executing
         $this->markAsRun();
-        
+
         // Store run information in payload
         $this->payload['last_run_at'] = $this->lastRunAt->format('Y-m-d H:i:s');
         $this->payload['next_run_at'] = $this->nextRunAt ? $this->nextRunAt->format('Y-m-d H:i:s') : null;
         $this->payload['run_count'] = ($this->payload['run_count'] ?? 0) + 1;
-        
+
         // Call parent handle method
         parent::handle();
     }
@@ -147,13 +147,13 @@ class ScheduledJob extends AbstractJob
     public function toArray(): array
     {
         $data = parent::toArray();
-        
+
         $data['cron_expression'] = $this->cronExpression->getExpression();
         $data['next_run_at'] = $this->nextRunAt ? $this->nextRunAt->format('Y-m-d H:i:s') : null;
         $data['last_run_at'] = $this->lastRunAt ? $this->lastRunAt->format('Y-m-d H:i:s') : null;
         $data['recurring'] = $this->isRecurring;
         $data['expires_at'] = $this->expiresAt ? $this->expiresAt->format('Y-m-d H:i:s') : null;
-        
+
         return $data;
     }
 
@@ -188,15 +188,15 @@ class ScheduledJob extends AbstractJob
         }
 
         $job = new self($data['payload'] ?? [], $options);
-        
+
         if (isset($data['cron_expression'])) {
             $job->setCronExpression($data['cron_expression']);
         }
-        
+
         if (isset($data['next_run_at'])) {
             $job->nextRunAt = new \DateTimeImmutable($data['next_run_at']);
         }
-        
+
         if (isset($data['last_run_at'])) {
             $job->lastRunAt = new \DateTimeImmutable($data['last_run_at']);
         }

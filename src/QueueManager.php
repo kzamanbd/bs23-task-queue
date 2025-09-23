@@ -74,9 +74,9 @@ class QueueManager
         );
 
         $this->workers[] = $worker;
-        
+
         $worker->work($queue, $timeout ?: $this->config['worker_timeout']);
-        
+
         return $worker;
     }
 
@@ -96,7 +96,7 @@ class QueueManager
                 $this->config['memory_limit'],
                 $this->config['max_jobs_per_worker']
             );
-            
+
             $workers[] = $worker;
             $this->workers[] = $worker;
         }
@@ -124,12 +124,12 @@ class QueueManager
         return $this->driver->size($queue);
     }
 
-    public function getQueueStats(string $queue = null): array
+    public function getQueueStats(?string $queue = null): array
     {
         return $this->driver->getQueueStats($queue);
     }
 
-    public function getFailedJobs(string $queue = null): array
+    public function getFailedJobs(?string $queue = null): array
     {
         return $this->driver->getFailedJobs($queue);
     }
@@ -162,7 +162,7 @@ class QueueManager
         return $this->driver->getJobById($jobId);
     }
 
-    public function getJobsByState(string $state, string $queue = null, int $limit = 100): array
+    public function getJobsByState(string $state, ?string $queue = null, int $limit = 100): array
     {
         return $this->driver->getJobsByState($state, $queue, $limit);
     }
