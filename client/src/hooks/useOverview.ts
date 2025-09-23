@@ -185,14 +185,14 @@ export const useOverview = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, []); // Empty dependency array - only run once on mount
 
     useEffect(() => {
         const interval = setInterval(() => {
             fetchData();
         }, 5000);
         return () => clearInterval(interval);
-    }, [fetchData]);
+    }, []); // Empty dependency array - stable interval
 
     const totals = calculateTotals(state.stats);
 

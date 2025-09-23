@@ -1,10 +1,25 @@
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import { Suspense, lazy } from 'react';
 import Header from './components/layout/header';
 import Navigation from './components/layout/navigation';
-import JobsTable from './pages/jobs-table';
-import Overview from './pages/overview-stats';
-import QueueManagement from './pages/queue-management';
-import ScheduledJobsList from './pages/scheduled-jobs-list';
+
+// Lazy load page components for code splitting
+const Overview = lazy(() => import('./pages/overview-stats'));
+const JobsTable = lazy(() => import('./pages/jobs-table'));
+const QueueManagement = lazy(() => import('./pages/queue-management'));
+const ScheduledJobsList = lazy(() => import('./pages/scheduled-jobs-list'));
+
+// Loading component for Suspense fallback
+function LoadingSpinner() {
+    return (
+        <div className="flex min-h-[400px] items-center justify-center">
+            <div className="flex flex-col items-center space-y-4">
+                <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-indigo-600"></div>
+                <p className="text-sm text-gray-600">Loading...</p>
+            </div>
+        </div>
+    );
+}
 
 // Layout component that wraps all pages
 function Layout() {
@@ -22,7 +37,9 @@ function Layout() {
 
                 <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                     <Navigation />
-                    <Outlet />
+                    <Suspense fallback={<LoadingSpinner />}>
+                        <Outlet />
+                    </Suspense>
                 </div>
             </div>
         </div>

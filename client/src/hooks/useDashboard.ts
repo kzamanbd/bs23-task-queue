@@ -205,10 +205,10 @@ export const useDashboard = () => {
         [fetchData]
     );
 
-    // Initial data fetch
+    // Initial data fetch - only run once on mount
     useEffect(() => {
         fetchData();
-    }, []);
+    }, []); // Empty dependency array - only run once
 
     // Auto-refresh every 5 seconds
     useEffect(() => {
@@ -217,7 +217,7 @@ export const useDashboard = () => {
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [fetchData]);
+    }, []); // Empty dependency array - stable interval
 
     const totals = calculateTotals(state.stats);
 

@@ -33,7 +33,7 @@ export const useJobs = (options: { limit?: number; state?: string; queue?: strin
 
     useEffect(() => {
         fetchJobs();
-    }, [fetchJobs]);
+    }, []); // Empty dependency array - only run once on mount
 
     return {
         allJobs: state.jobs,
