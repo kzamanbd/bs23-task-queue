@@ -29,7 +29,7 @@ const Modal = ({
 }: ModalProps) => {
     return (
         <Transition appear show={open} as={Fragment}>
-            <Dialog as="div" className="z-[9999]" onClose={onClose}>
+            <Dialog as="div" onClose={onClose}>
                 {/* Backdrop with fade transition */}
                 <TransitionChild
                     as={Fragment}
@@ -45,8 +45,10 @@ const Modal = ({
                 {/* Full-screen container to center the panel */}
                 <div
                     className={classNames(
-                        'fixed inset-0 z-[9999] flex w-screen',
-                        fullScreen ? '' : 'items-center justify-center p-4'
+                        'fixed inset-0 z-[9999] flex w-screen overflow-y-auto',
+                        fullScreen
+                            ? 'items-stretch justify-stretch'
+                            : 'items-center justify-center p-4'
                     )}>
                     {/* Panel with scale and fade transition */}
                     <TransitionChild
@@ -60,8 +62,8 @@ const Modal = ({
                         <DialogPanel
                             className={classNames(
                                 fullScreen
-                                    ? 'h-full w-full bg-white'
-                                    : 'relative m-4 w-full max-w-md transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all',
+                                    ? 'flex h-full w-full flex-col bg-white'
+                                    : 'relative m-4 flex w-full max-w-md transform flex-col rounded-lg bg-white text-left shadow-xl transition-all',
                                 className
                             )}>
                             {children}
@@ -101,7 +103,7 @@ export type ContentProps = {
 
 const Content: React.FunctionComponent<ContentProps> = ({ children, className, ...rest }) => {
     return (
-        <div className={classNames('p-4', className)} {...rest}>
+        <div className={classNames('flex-1 overflow-y-auto p-4', className)} {...rest}>
             {children}
         </div>
     );
