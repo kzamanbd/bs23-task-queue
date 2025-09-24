@@ -11,8 +11,9 @@
         "client"
     ],
     "scripts": {
-        "dev": "concurrently \"npm run dev --workspace=client\" \"npm run queue:work\"",
+        "dev": "concurrently \"npm run dev --workspace=client\" \"npm run queue:work\" \"npm run api:start\"",
         "queue:work": "php worker queue:work",
+        "api:start": "php worker dashboard:serve",
         "build": "npm run build --workspace=client",
         "format": "npm run format --workspace=client",
         "lint": "npm run lint --workspace=client"
