@@ -66,24 +66,25 @@ sequenceDiagram
   participant Worker
   participant Driver as DatabaseQueueDriver
   participant Job
-  Note over Worker: work(queue) loop
-  Worker->>Driver: pop(queue)
+  Note over Worker: work queue loop
+  Worker->>Driver: pop queue
   alt job available
-    Driver-->>Worker: Job (state=processing)
-    Worker->>Job: setState(processing); incrementAttempts()
+    Driver-->>Worker: job received processing
+    Worker->>Job: set state to processing
+    Worker->>Job: increment attempts
     Worker->>Worker: setup timeout if configured
-    Worker->>Job: handle()
-    Worker->>Worker: pcntl_alarm(0)
-    Worker->>Job: setState(completed); setCompletedAt()
-    Worker->>Driver: update(job)
+    Worker->>Job: handle
+    Worker->>Worker: clear timeout alarm
+    Worker->>Job: set state to completed
+    Worker->>Driver: update job
   else error thrown
-    Worker->>Worker: pcntl_alarm(0)
-    alt canRetry
-      Worker->>Job: setState(retrying)
-      Worker->>Driver: release(job, delay=2^attempts<=300)
+    Worker->>Worker: clear timeout alarm
+    alt can retry
+      Worker->>Job: set state to retrying
+      Worker->>Driver: release with backoff delay
     else final failure
-      Worker->>Job: setState(failed); setFailedAt()
-      Worker->>Driver: update(job) (kept for inspection)
+      Worker->>Job: set state to failed
+      Worker->>Driver: update job kept for inspection
     end
   end
 ```
