@@ -12,9 +12,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use TaskQueue\QueueManager;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Support\Encryption;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+use TaskQueue\Support\LoggerFactory;
 use PDO;
+use Throwable;
 
 class WorkCommand extends Command
 {
@@ -38,9 +38,8 @@ class WorkCommand extends Command
         $memoryLimit = (int) $input->getOption('memory') * 1024 * 1024;
         $maxJobs = (int) $input->getOption('max-jobs');
 
-        // Setup logger
-        $logger = new Logger('queue-worker');
-        $logger->pushHandler(new StreamHandler('php://stdout', Logger::INFO));
+        // Setup styled logger via factory
+        $logger = LoggerFactory::createStyledLogger('queue-worker');
 
         // Setup database connection
         $pdo = new PDO('sqlite:' . __DIR__ . '/../../storage/queue.db');
@@ -60,20 +59,20 @@ class WorkCommand extends Command
 
         $manager->connect();
 
-        $output->writeln("<info>Starting {$workerCount} worker(s) for queue: {$queue}</info>");
+        $output->writeln("<info>Starting $workerCount worker(s) for queue: $queue</info>");
         $output->writeln("<info>Memory limit: " . ($memoryLimit / 1024 / 1024) . "MB</info>");
-        $output->writeln("<info>Max jobs per worker: {$maxJobs}</info>");
-        $output->writeln("<info>Worker timeout: {$timeout} seconds</info>");
+        $output->writeln("<info>Max jobs per worker: $maxJobs</info>");
+        $output->writeln("<info>Worker timeout: $timeout seconds</info>");
 
         try {
             // For Docker containers, use a single worker that processes jobs continuously
             // Multiple workers should be handled by scaling the container replicas
-            $output->writeln("<info>Starting worker for queue: {$queue}</info>");
+            $output->writeln("<info>Starting worker for queue: $queue</info>");
             $worker = $manager->startWorker($queue, $timeout);
             $output->writeln("<info>Worker completed</info>");
 
             return Command::SUCCESS;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $output->writeln("<error>Worker error: " . $e->getMessage() . "</error>");
             return Command::FAILURE;
         } finally {

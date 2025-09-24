@@ -10,8 +10,7 @@ use TaskQueue\Contracts\JobInterface;
 use TaskQueue\Contracts\QueueDriverInterface;
 use TaskQueue\Contracts\WorkerInterface;
 use Psr\Log\LoggerInterface;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+use TaskQueue\Support\LoggerFactory;
 use Throwable;
 
 class Worker implements WorkerInterface
@@ -332,7 +331,7 @@ class Worker implements WorkerInterface
     {
         try {
             // Clean up completed jobs older than 1 hour
-            $deletedCount = $this->queueDriver->cleanupOldCompletedJobs(1);
+            $deletedCount = $this->queueDriver->cleanupOldCompletedJobs();
             if ($deletedCount > 0) {
                 $this->logger->info('Cleaned up old completed jobs', [
                     'deleted_count' => $deletedCount
@@ -347,8 +346,6 @@ class Worker implements WorkerInterface
 
     private function createDefaultLogger(): LoggerInterface
     {
-        $logger = new Logger('worker');
-        $logger->pushHandler(new StreamHandler('php://stderr', Logger::INFO));
-        return $logger;
+        return LoggerFactory::createStyledLogger('worker', 'php://stderr');
     }
 }
