@@ -34,6 +34,29 @@ composer install
 chmod +x worker
 ```
 
+### CLI Overview (Commands and Flows)
+
+```mermaid
+mindmap
+  root((CLI))
+    queue:work
+      starts worker loop
+      reads from queue
+      processes jobs with retry/backoff
+    queue:test
+      creates N test jobs
+      pushes via QueueManager→Driver
+    schedule:manage
+      list
+      create (--schedule cron|NL, --job-class, --payload, --queue, --priority, --recurring, --expires)
+      delete (--job-id)
+      next (preview next run times)
+      stats
+    dashboard:serve
+      php -S host:port
+      serves public/ and API endpoints for React UI
+```
+
 ### First Run
 
 ```bash
