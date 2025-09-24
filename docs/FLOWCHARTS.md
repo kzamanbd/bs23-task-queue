@@ -93,19 +93,19 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-  NL["NaturalLanguageParser.parse('every 5 minutes' | 'at 3pm' | cron)"]
-  CJ["CronExpression"]
-  SJ["ScheduledJob (id, queue, priority, recurring, expires_at, tags)"]
-  JS["JobScheduler"]
-  DQ["DatabaseQueueDriver.push(executionJob)"]
+  NL[Parse schedule natural language or cron]
+  CJ[CronExpression]
+  SJ[ScheduledJob id queue priority recurring expires tags]
+  JS[JobScheduler]
+  DQ[DatabaseQueueDriver push execution job]
 
   NL --> CJ
   CJ --> SJ
   SJ -->|schedule| JS
-  JS -->|run loop (checkInterval=60s)| JS
-  JS -->|isDue(now)| DQ
-  JS -->|non-recurring| remove["unschedule(original)"]
-  JS -->|recurring| updateNext["markAsRun + compute next_run_at"]
+  JS -->|run loop interval 60s| JS
+  JS -->|is due| DQ
+  JS --> remove[unschedule original]
+  JS --> updateNext[mark as run and compute next run]
 ```
 
 ## CLI Overview (Commands and Flows)
