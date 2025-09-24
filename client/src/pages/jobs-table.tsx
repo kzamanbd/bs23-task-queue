@@ -14,15 +14,11 @@ import {
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
-interface JobsTableProps {
-    onJobRetried?: () => void;
-}
-
 type JobState = 'all' | 'pending' | 'processing' | 'completed' | 'failed';
 type SortField = 'id' | 'created_at' | 'updated_at' | 'priority' | 'state' | 'queue';
 type SortDirection = 'asc' | 'desc';
 
-const JobsTable: React.FC<JobsTableProps> = ({ onJobRetried }) => {
+const JobsTable: React.FC = () => {
     const { allJobs: jobs, isLoading, error, refreshData: onRefresh } = useJobs({ limit: 100 });
 
     const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
@@ -426,7 +422,6 @@ const JobsTable: React.FC<JobsTableProps> = ({ onJobRetried }) => {
                     jobId={selectedJobId}
                     isOpen={isModalOpen}
                     onClose={handleCloseModal}
-                    onJobRetried={onJobRetried}
                 />
             )}
         </Card>

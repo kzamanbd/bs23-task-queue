@@ -8,7 +8,7 @@ import QueueChart from '../components/queues/queue-chart';
 import QueuesSummary from '../components/queues/queues-summary';
 import { useOverview } from '../hooks/useOverview';
 
-const Overview: React.FC = () => {
+const OverviewStats: React.FC = () => {
     const {
         totals,
         recentJobs,
@@ -86,5 +86,5 @@ const Overview: React.FC = () => {
     );
 };
 
-export default Overview;
+export default OverviewStats;
 

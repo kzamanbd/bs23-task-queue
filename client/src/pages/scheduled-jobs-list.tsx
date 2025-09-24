@@ -18,19 +18,7 @@ import CreateScheduledJobModal from '../components/scheduled/create-modal';
 import ScheduledJobDetailsModal from '../components/scheduled/details-modal';
 import Card from '../components/shared/card-ui';
 
-interface ScheduledJobsListProps {
-    onRefresh?: () => void;
-    onJobCreated?: () => void;
-    onJobDeleted?: () => void;
-    onJobExecuted?: () => void;
-}
-
-const ScheduledJobsList: React.FC<ScheduledJobsListProps> = ({
-    onRefresh,
-    onJobCreated,
-    onJobDeleted,
-    onJobExecuted
-}) => {
+const ScheduledJobsList: React.FC = () => {
     const [scheduledJobs, setScheduledJobs] = useState<ScheduledJob[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -65,8 +53,7 @@ const ScheduledJobsList: React.FC<ScheduledJobsListProps> = ({
         setRunningJobs((prev) => new Set(prev).add(jobId));
         try {
             await runScheduledJob(jobId);
-            onJobExecuted?.();
-            onRefresh?.();
+            await fetchScheduledJobs(); // Refresh the data locally
         } catch (error) {
             console.error('Failed to run scheduled job:', error);
         } finally {
@@ -93,7 +80,6 @@ const ScheduledJobsList: React.FC<ScheduledJobsListProps> = ({
         try {
             await deleteScheduledJob(jobId);
             setScheduledJobs((prev) => prev.filter((job) => job.id !== jobId));
-            onJobDeleted?.();
             setConfirmDelete({ isOpen: false, jobId: '' });
         } catch (error) {
             console.error('Failed to delete scheduled job:', error);
@@ -382,7 +368,6 @@ const ScheduledJobsList: React.FC<ScheduledJobsListProps> = ({
                 onClose={() => setShowCreateForm(false)}
                 onJobCreated={() => {
                     fetchScheduledJobs();
-                    onJobCreated?.();
                 }}
             />
 
@@ -399,10 +384,9 @@ const ScheduledJobsList: React.FC<ScheduledJobsListProps> = ({
                 }}
                 onJobDeleted={() => {
                     fetchScheduledJobs();
-                    onJobDeleted?.();
                 }}
                 onJobExecuted={() => {
-                    onJobExecuted?.();
+                    fetchScheduledJobs();
                 }}
             />
 

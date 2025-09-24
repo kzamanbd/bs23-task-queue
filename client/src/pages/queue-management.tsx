@@ -18,12 +18,7 @@ import Card from '../components/shared/card-ui';
 import type { Job } from '../services/api';
 import { getOverview, purgeQueue } from '../services/api';
 
-interface QueueManagementProps {
-    onRefresh?: () => void;
-    onQueuePurged?: (queueName: string) => void;
-}
-
-const QueueManagement: React.FC<QueueManagementProps> = ({ onQueuePurged }) => {
+const QueueManagement: React.FC = () => {
     const [queues, setQueues] = useState<
         Array<{
             name: string;
@@ -114,7 +109,6 @@ const QueueManagement: React.FC<QueueManagementProps> = ({ onQueuePurged }) => {
                         : queue
                 )
             );
-            onQueuePurged?.(queueName);
             setConfirmPurge({ isOpen: false, queueName: '' });
         } catch (error) {
             console.error('Failed to purge queue:', error);
