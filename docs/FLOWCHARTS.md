@@ -82,7 +82,7 @@ sequenceDiagram
     Worker->>Worker: pcntl_alarm(0)
     alt canRetry
       Worker->>Job: setState(retrying)
-      Worker->>Driver: release(job, delay=2^attempts≤300)
+      Worker->>Driver: release(job, delay=2^attempts<=300)
     else final failure
       Worker->>Job: setState(failed); setFailedAt()
       Worker->>Driver: update(job) (kept for inspection)
@@ -90,7 +90,7 @@ sequenceDiagram
   end
 ```
 
-## Scheduler Flow (Cron/Natural Language → Dispatch)
+## Scheduler Flow (Cron/Natural Language -> Dispatch)
 
 ```mermaid
 flowchart TD
