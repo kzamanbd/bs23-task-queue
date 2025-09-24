@@ -13,6 +13,7 @@ use TaskQueue\QueueManager;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Support\Encryption;
 use TaskQueue\Support\LoggerFactory;
+use TaskQueue\Support\Database;
 use PDO;
 use Throwable;
 
@@ -42,8 +43,7 @@ class WorkCommand extends Command
         $logger = LoggerFactory::createStyledLogger('queue-worker');
 
         // Setup database connection
-        $pdo = new PDO('sqlite:' . __DIR__ . '/../../storage/queue.db');
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo = Database::createSqlitePdo(__DIR__ . '/../../storage/queue.db');
 
         // Setup encryption (using a simple key for demo)
         $encryption = new Encryption('demo-encryption-key-32-characters');

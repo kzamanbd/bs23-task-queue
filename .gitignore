@@ -1,6 +1,6 @@
 vendor
-/storage/**/*.db
-/storage/**/*.db-journal
+!/storage/.gitkeep
+/storage/*
 .phpunit.result.cache
 # Logs
 logs

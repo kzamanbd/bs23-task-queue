@@ -33,6 +33,18 @@ class DatabaseQueueDriver implements QueueDriverInterface
 
     public function connect(): void
     {
+        // Configure SQLite for concurrency where applicable
+        try {
+            // Set a busy timeout to wait for locks
+            $this->pdo->exec("PRAGMA busy_timeout=5000");
+            // Enable WAL mode for better concurrent reads/writes
+            $this->pdo->exec("PRAGMA journal_mode=WAL");
+            // Reasonable durability with better performance under WAL
+            $this->pdo->exec("PRAGMA synchronous=NORMAL");
+        } catch (\Throwable $e) {
+            // Ignore PRAGMA errors on non-SQLite drivers
+        }
+
         $this->createTableIfNotExists();
         $this->connected = true;
     }
@@ -87,33 +99,62 @@ class DatabaseQueueDriver implements QueueDriverInterface
     {
         $this->ensureConnected();
 
-        $sql = "SELECT * FROM {$this->tableName} 
-                WHERE queue_name = ? AND state = ? AND (delay_seconds = 0 OR created_at <= ?)
-                ORDER BY priority DESC, created_at ASC 
-                LIMIT 1";
+        $now = (new \DateTimeImmutable())->format('Y-m-d H:i:s');
 
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute([
-            $queue,
-            JobInterface::STATE_PENDING,
-            (new \DateTimeImmutable())->format('Y-m-d H:i:s')
-        ]);
+        // Try a few times in case of contention
+        for ($attempt = 0; $attempt < 3; $attempt++) {
+            try {
+                // Use a short transaction to atomically select-and-claim
+                $this->pdo->beginTransaction();
 
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row) {
-            return null;
+                $selectSql = "SELECT * FROM {$this->tableName}
+                    WHERE queue_name = ? AND state = ? AND (delay_seconds = 0 OR created_at <= ?)
+                    ORDER BY priority DESC, created_at ASC
+                    LIMIT 1";
+
+                $selectStmt = $this->pdo->prepare($selectSql);
+                $selectStmt->execute([$queue, JobInterface::STATE_PENDING, $now]);
+                $row = $selectStmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$row) {
+                    $this->pdo->rollBack();
+                    return null;
+                }
+
+                // Only claim if still pending to avoid races
+                $updateSql = "UPDATE {$this->tableName}
+                    SET state = ?, updated_at = ?
+                    WHERE id = ? AND state = ?";
+                $updateStmt = $this->pdo->prepare($updateSql);
+                $updated = $updateStmt->execute([
+                    JobInterface::STATE_PROCESSING,
+                    $now,
+                    $row['id'],
+                    JobInterface::STATE_PENDING
+                ]);
+
+                if ($updated && $updateStmt->rowCount() === 1) {
+                    $this->pdo->commit();
+                    return $this->rowToJob($row);
+                }
+
+                // Another worker claimed it; retry
+                $this->pdo->rollBack();
+                usleep(20000); // 20ms backoff
+            } catch (\Throwable $e) {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
+                // On locking errors, brief backoff and retry; otherwise rethrow
+                if (strpos($e->getMessage(), 'database is locked') !== false) {
+                    usleep(50000); // 50ms
+                    continue;
+                }
+                throw $e;
+            }
         }
 
-        // Update job state to processing
-        $updateSql = "UPDATE {$this->tableName} SET state = ?, updated_at = ? WHERE id = ?";
-        $updateStmt = $this->pdo->prepare($updateSql);
-        $updateStmt->execute([
-            JobInterface::STATE_PROCESSING,
-            (new \DateTimeImmutable())->format('Y-m-d H:i:s'),
-            $row['id']
-        ]);
-
-        return $this->rowToJob($row);
+        return null;
     }
 
     public function peek(string $queue): ?JobInterface

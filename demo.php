@@ -8,22 +8,20 @@ use TaskQueue\QueueManager;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Jobs\TestJob;
 use TaskQueue\Support\Encryption;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+use TaskQueue\Support\Database;
+use TaskQueue\Support\LoggerFactory;
 
 echo "🚀 Task Queue System Demo\n";
 echo "========================\n\n";
 
 // Setup database connection
-$pdo = new PDO('sqlite:' . __DIR__ . '/storage/demo.db');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$pdo = Database::createSqlitePdo(__DIR__ . '/storage/demo.db');
 
 // Setup encryption
 $encryption = new Encryption('demo-encryption-key-32-characters');
 
 // Setup logger
-$logger = new Logger('demo');
-$logger->pushHandler(new StreamHandler('php://stdout', Logger::INFO));
+$logger = LoggerFactory::createStyledLogger('demo');
 
 // Create queue manager
 $driver = new DatabaseQueueDriver($pdo, $encryption);

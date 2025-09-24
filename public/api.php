@@ -20,10 +20,10 @@ use TaskQueue\Public\Actions\Overview;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Public\Actions\CreateTestJobs;
 use TaskQueue\Public\Actions\ScheduledJobs;
+use TaskQueue\Support\Database;
 
 // Setup database connection
-$pdo = new PDO('sqlite:' . __DIR__ . '/../storage/queue.db');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$pdo = Database::createSqlitePdo(__DIR__ . '/../storage/queue.db');
 
 // Setup encryption
 $encryption = new Encryption('demo-encryption-key-32-characters');

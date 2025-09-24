@@ -16,6 +16,7 @@ use TaskQueue\Jobs\TestJob;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use PDO;
+use TaskQueue\Support\Database;
 
 class QueueCommand extends Command
 {
@@ -33,7 +34,7 @@ class QueueCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        
+
         $jobCount = (int) $input->getOption('jobs');
         $queue = $input->getOption('queue');
         $priority = (int) $input->getOption('priority');
@@ -44,8 +45,7 @@ class QueueCommand extends Command
         $logger->pushHandler(new StreamHandler('php://stdout', Logger::INFO));
 
         // Setup database connection
-        $pdo = new PDO('sqlite:' . __DIR__ . '/../../storage/queue.db');
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo = Database::createSqlitePdo(__DIR__ . '/../../storage/queue.db');
 
         // Setup encryption
         $encryption = new Encryption('demo-encryption-key-32-characters');
