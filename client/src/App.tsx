@@ -1,7 +1,7 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
-import { Suspense, lazy } from 'react';
-import Header from './components/layout/header';
-import Navigation from './components/layout/navigation';
+import Header from './components/layouts/header';
+import Navigation from './components/layouts/navigation';
 
 // Lazy load page components for code splitting
 const Overview = lazy(() => import('./pages/overview-stats'));
