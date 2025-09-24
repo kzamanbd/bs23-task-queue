@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Job } from '../services/api';
 import { getAllJobs } from '../services/api';
+import type { Job } from '../types/api';
 
 interface JobsState {
     jobs: Job[];

@@ -1,8 +1,6 @@
 import {
     AlertTriangle,
     BarChart3,
-    CheckCircle,
-    Clock,
     Eye,
     Filter,
     RefreshCw,
@@ -15,8 +13,8 @@ import React, { useEffect, useState } from 'react';
 import ConfirmModal from '../components/dashboard/confirm-modal';
 import QueueSettingsModal from '../components/queues/queue-settings-modal';
 import Card from '../components/shared/card-ui';
-import type { Job } from '../services/api';
 import { getOverview, purgeQueue } from '../services/api';
+import type { Job } from '../types/api';
 
 const QueueManagement: React.FC = () => {
     const [queues, setQueues] = useState<
@@ -123,21 +121,6 @@ const QueueManagement: React.FC = () => {
 
     const formatDateTime = (dateString: string) => {
         return new Date(dateString).toLocaleString();
-    };
-
-    const getStateIcon = (state: string) => {
-        switch (state) {
-            case 'pending':
-                return <Clock className="h-4 w-4 text-amber-500" />;
-            case 'processing':
-                return <Zap className="h-4 w-4 text-blue-500" />;
-            case 'completed':
-                return <CheckCircle className="h-4 w-4 text-green-500" />;
-            case 'failed':
-                return <AlertTriangle className="h-4 w-4 text-red-500" />;
-            default:
-                return <Clock className="h-4 w-4 text-gray-500" />;
-        }
     };
 
     const getStateColor = (state: string) => {
@@ -394,18 +377,11 @@ const QueueManagement: React.FC = () => {
                             <div className="space-y-3 divide-y divide-gray-200">
                                 {filteredJobs.map((job) => {
                                     const stateClass = getStateColor(job.state);
-                                    const stateIcon = getStateIcon(job.state);
 
                                     return (
                                         <div
                                             key={job.id}
                                             className="group flex items-center gap-4 p-4 transition-colors hover:bg-gray-50">
-                                            <div className="flex-shrink-0">
-                                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 shadow-sm transition-transform duration-200 group-hover:scale-110">
-                                                    {stateIcon}
-                                                </div>
-                                            </div>
-
                                             <div className="min-w-0 flex-1">
                                                 <div className="mb-1 flex items-center gap-2">
                                                     <div className="truncate font-mono text-sm font-semibold text-gray-800">

@@ -29,14 +29,14 @@ const JobsTable: React.FC = () => {
     const [sortField, setSortField] = useState<SortField>('updated_at');
     const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
 
-    const stateColors = {
+    const stateColors: { [K in Exclude<JobState, 'all'>]: string } = {
         pending: 'bg-amber-100 text-amber-800 border-amber-200',
         processing: 'bg-blue-100 text-blue-800 border-blue-200',
         completed: 'bg-green-100 text-green-800 border-green-200',
         failed: 'bg-red-100 text-red-800 border-red-200'
     };
 
-    const stateIcons = {
+    const stateIcons: { [K in Exclude<JobState, 'all'>]: React.ReactElement } = {
         pending: <Clock className="h-4 w-4" />,
         processing: <Zap className="h-4 w-4" />,
         completed: <CheckCircle className="h-4 w-4" />,

@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace TaskQueue\Public\Actions;
 
+use Exception;
+use DateTimeImmutable;
+use InvalidArgumentException;
+use TaskQueue\Jobs\ScheduledJob;
+
 class ScheduledJobs extends Action
 {
     public function handle(array $get, array $post): array
@@ -22,7 +27,7 @@ class ScheduledJobs extends Action
             case 'stats':
                 return $this->getSchedulerStats();
             default:
-                throw new \InvalidArgumentException('Invalid sub_action');
+                throw new InvalidArgumentException('Invalid sub_action');
         }
     }
 
@@ -64,22 +69,22 @@ class ScheduledJobs extends Action
         $expires = $post['expires_at'] ?? null;
 
         if (empty($schedule)) {
-            throw new \InvalidArgumentException('Schedule expression is required');
+            throw new InvalidArgumentException('Schedule expression is required');
         }
 
         // Parse payload
         $jobPayload = json_decode($payload, true);
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \InvalidArgumentException('Invalid JSON payload: ' . json_last_error_msg());
+            throw new InvalidArgumentException('Invalid JSON payload: ' . json_last_error_msg());
         }
 
         // Parse expiration date
         $expiresAt = null;
         if ($expires) {
             try {
-                $expiresAt = new \DateTimeImmutable($expires);
-            } catch (\Exception $e) {
-                throw new \InvalidArgumentException('Invalid expiration date format. Use Y-m-d H:i:s');
+                $expiresAt = new DateTimeImmutable($expires);
+            } catch (Exception $e) {
+                throw new InvalidArgumentException('Invalid expiration date format. Use Y-m-d H:i:s');
             }
         }
 
@@ -92,7 +97,7 @@ class ScheduledJobs extends Action
             'tags' => ['scheduled', 'dashboard-created']
         ];
 
-        $scheduledJob = new \TaskQueue\Jobs\ScheduledJob($jobPayload, $options);
+        $scheduledJob = new ScheduledJob($jobPayload, $options);
         $scheduledJob->setSchedule($schedule);
 
         // Schedule the job
@@ -110,7 +115,7 @@ class ScheduledJobs extends Action
         $jobId = $post['job_id'] ?? '';
 
         if (empty($jobId)) {
-            throw new \InvalidArgumentException('Job ID is required');
+            throw new InvalidArgumentException('Job ID is required');
         }
 
         $this->manager->unscheduleJob($jobId);
@@ -126,7 +131,7 @@ class ScheduledJobs extends Action
         $jobId = $post['job_id'] ?? '';
 
         if (empty($jobId)) {
-            throw new \InvalidArgumentException('Job ID is required');
+            throw new InvalidArgumentException('Job ID is required');
         }
 
         $scheduledJob = $this->manager->getScheduledJob($jobId);

@@ -1,6 +1,6 @@
+import type { ScheduledJob } from '@/types/api';
 import { Calendar, Clock, Play, Settings, Tag, Trash2, Zap } from 'lucide-react';
 import React, { useState } from 'react';
-import type { ScheduledJob } from '../../services/api';
 import { deleteScheduledJob, runScheduledJob } from '../../services/api';
 import Modal from '../shared/modal-ui';
 
@@ -196,7 +196,7 @@ const ScheduledJobDetailsModal: React.FC<ScheduledJobDetailsModalProps> = ({
                                 Tags
                             </h3>
                             <div className="flex flex-wrap gap-2">
-                                {job.tags.map((tag, index) => (
+                                {job.tags.map((tag: string, index: number) => (
                                     <span
                                         key={index}
                                         className="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">

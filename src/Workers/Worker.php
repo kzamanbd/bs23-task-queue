@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace TaskQueue\Workers;
 
+use DateTimeImmutable;
+use RuntimeException;
 use TaskQueue\Contracts\JobInterface;
 use TaskQueue\Contracts\QueueDriverInterface;
 use TaskQueue\Contracts\WorkerInterface;
 use Psr\Log\LoggerInterface;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
+use Throwable;
 
 class Worker implements WorkerInterface
 {
@@ -18,7 +21,7 @@ class Worker implements WorkerInterface
     private bool $running = false;
     private bool $paused = false;
     private ?int $processId = null;
-    private \DateTimeImmutable $startTime;
+    private DateTimeImmutable $startTime;
     private int $jobsProcessed = 0;
     private int $jobsFailed = 0;
     private int $memoryLimit;
@@ -27,7 +30,7 @@ class Worker implements WorkerInterface
 
     public function __construct(
         QueueDriverInterface $queueDriver,
-        LoggerInterface $logger = null,
+        ?LoggerInterface $logger = null,
         int $memoryLimit = 50 * 1024 * 1024, // 50MB
         int $maxJobs = 1000
     ) {
@@ -36,7 +39,7 @@ class Worker implements WorkerInterface
         $this->memoryLimit = $memoryLimit;
         $this->maxJobs = $maxJobs;
         $this->processId = getmypid();
-        $this->startTime = new \DateTimeImmutable();
+        $this->startTime = new DateTimeImmutable();
 
         $this->setupSignalHandlers();
     }
@@ -83,7 +86,7 @@ class Worker implements WorkerInterface
 
                 // Try to get a job
                 $job = $this->queueDriver->pop($queue);
-                
+
                 if ($job === null) {
                     usleep(100000); // 100ms
                     continue;
@@ -102,8 +105,7 @@ class Worker implements WorkerInterface
                     $this->cleanupOldCompletedJobs();
                     $lastCleanup = time();
                 }
-
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->logger->error('Worker error', [
                     'error' => $e->getMessage(),
                     'trace' => $e->getTraceAsString()
@@ -168,7 +170,7 @@ class Worker implements WorkerInterface
         return $this->jobsFailed;
     }
 
-    public function getStartTime(): \DateTimeImmutable
+    public function getStartTime(): DateTimeImmutable
     {
         return $this->startTime;
     }
@@ -217,12 +219,12 @@ class Worker implements WorkerInterface
             }
 
             $job->handle();
-            
+
             // Clear alarm
             pcntl_alarm(0);
 
             $job->setState(JobInterface::STATE_COMPLETED);
-            $job->setCompletedAt(new \DateTimeImmutable());
+            $job->setCompletedAt(new DateTimeImmutable());
             // Keep completed jobs for 1 hour instead of deleting immediately
             $this->queueDriver->update($job);
 
@@ -231,13 +233,12 @@ class Worker implements WorkerInterface
 
             $this->logger->info('Job completed', [
                 'job_id' => $job->getId(),
-                'processing_time' => round($processingTime, 3),
+                'processing_time' => number_format($processingTime, 3),
                 'attempts' => $job->getAttempts()
             ]);
-
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             pcntl_alarm(0); // Clear any pending alarm
-            
+
             $job->setException($e);
             $processingTime = microtime(true) - $startTime;
 
@@ -245,27 +246,27 @@ class Worker implements WorkerInterface
                 $job->setState(JobInterface::STATE_RETRYING);
                 $delay = $this->calculateRetryDelay($job);
                 $this->queueDriver->release($job, $delay);
-                
+
                 $this->logger->warning('Job failed, will retry', [
                     'job_id' => $job->getId(),
                     'error' => $e->getMessage(),
                     'attempts' => $job->getAttempts(),
                     'max_attempts' => $job->getMaxAttempts(),
                     'retry_delay' => $delay,
-                    'processing_time' => round($processingTime, 3)
+                    'processing_time' => number_format($processingTime, 3)
                 ]);
             } else {
                 $job->setState(JobInterface::STATE_FAILED);
-                $job->setFailedAt(new \DateTimeImmutable());
+                $job->setFailedAt(new DateTimeImmutable());
                 // Keep the job in the database for inspection
-                
+
                 $this->jobsFailed++;
                 $this->logger->error('Job failed permanently', [
                     'job_id' => $job->getId(),
                     'error' => $e->getMessage(),
                     'attempts' => $job->getAttempts(),
                     'max_attempts' => $job->getMaxAttempts(),
-                    'processing_time' => round($processingTime, 3)
+                    'processing_time' => number_format($processingTime, 3)
                 ]);
             }
         }
@@ -318,7 +319,7 @@ class Worker implements WorkerInterface
                 break;
             case SIGALRM:
                 $this->logger->warning('Job timeout signal received');
-                throw new \RuntimeException('Job timeout exceeded');
+                throw new RuntimeException('Job timeout exceeded');
         }
     }
 
@@ -337,7 +338,7 @@ class Worker implements WorkerInterface
                     'deleted_count' => $deletedCount
                 ]);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->logger->warning('Failed to cleanup old completed jobs', [
                 'error' => $e->getMessage()
             ]);

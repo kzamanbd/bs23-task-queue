@@ -1,15 +1,6 @@
-import {
-    AlertTriangle,
-    CheckCircle,
-    Clock,
-    Eye,
-    FileText,
-    RefreshCw,
-    XCircle,
-    Zap
-} from 'lucide-react';
+import { AlertTriangle, Eye, FileText, RefreshCw } from 'lucide-react';
 import React, { useState } from 'react';
-import type { Job } from '../../services/api';
+import type { Job } from '../../types/api';
 import Card from '../shared/card-ui';
 import JobDetailsModal from './job-details-modal';
 
@@ -33,13 +24,6 @@ const RecentJobs: React.FC<RecentJobsProps> = ({
         processing: 'bg-blue-100 text-blue-800 border-blue-200',
         completed: 'bg-green-100 text-green-800 border-green-200',
         failed: 'bg-red-100 text-red-800 border-red-200'
-    };
-
-    const stateIcons = {
-        pending: <Clock className="h-5 w-5" />,
-        processing: <Zap className="h-5 w-5" />,
-        completed: <CheckCircle className="h-5 w-5" />,
-        failed: <XCircle className="h-5 w-5" />
     };
 
     const handleViewDetails = (jobId: string) => {
@@ -151,17 +135,11 @@ const RecentJobs: React.FC<RecentJobsProps> = ({
                 <div className="space-y-3 divide-y divide-gray-200">
                     {jobs.map((job) => {
                         const stateClass =
-                            stateColors[job.state] || 'bg-gray-100 text-gray-800 border-gray-200';
-                        const stateIcon = stateIcons[job.state] || <XCircle className="h-5 w-5" />;
+                            stateColors[job.state as keyof typeof stateColors] ||
+                            'bg-gray-100 text-gray-800 border-gray-200';
 
                         return (
                             <div key={job.id} className="group flex items-center gap-4 p-4">
-                                <div className="flex-shrink-0">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 shadow-sm transition-transform duration-200 group-hover:scale-110">
-                                        {stateIcon}
-                                    </div>
-                                </div>
-
                                 <div className="min-w-0 flex-1">
                                     <div className="mb-1 flex items-center gap-2">
                                         <div className="truncate font-mono text-sm font-semibold text-gray-800">

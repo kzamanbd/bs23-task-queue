@@ -232,6 +232,11 @@ class QueueManager
         $this->getScheduler()->unschedule($jobId);
     }
 
+    public function getScheduledJob(string $jobId): ?\TaskQueue\Jobs\ScheduledJob
+    {
+        return $this->getScheduler()->getScheduledJob($jobId);
+    }
+
     public function setRateLimit(string $key, int $maxRequests, int $windowSeconds): void
     {
         $this->getRateLimiter()->setLimit($key, $maxRequests, $windowSeconds);

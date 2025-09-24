@@ -1,5 +1,5 @@
-import type { ScheduledJob } from '@/services/api';
 import { deleteScheduledJob, getScheduledJobs, runScheduledJob } from '@/services/api';
+import type { ScheduledJob } from '@/types/api';
 import {
     AlertCircle,
     Calendar,
@@ -294,13 +294,15 @@ const ScheduledJobsList: React.FC = () => {
                                                     <div className="flex items-center gap-2">
                                                         <Tag className="h-3 w-3 text-blue-400" />
                                                         <div className="flex flex-wrap gap-1">
-                                                            {job.tags.map((tag, index) => (
-                                                                <span
-                                                                    key={index}
-                                                                    className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800">
-                                                                    {tag}
-                                                                </span>
-                                                            ))}
+                                                            {job.tags.map(
+                                                                (tag: string, index: number) => (
+                                                                    <span
+                                                                        key={index}
+                                                                        className="rounded bg-blue-100 px-2 py-1 text-xs text-blue-800">
+                                                                        {tag}
+                                                                    </span>
+                                                                )
+                                                            )}
                                                         </div>
                                                     </div>
                                                 )}

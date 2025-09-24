@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import type { Job, QueueStats } from '../services/api';
 import {
     createTestJobs as apiCreateTestJobs,
     purgeQueue as apiPurgeQueue,
     getOverview
 } from '../services/api';
+import type { Job, QueueStats } from '../types/api';
 
 interface PerformanceDataPoint {
     time: string;
@@ -79,7 +79,8 @@ export const useOverview = () => {
 
     const calculateTotals = useCallback((stats: QueueStats | null) => {
         if (!stats) return { pending: 0, processing: 0, completed: 0, failed: 0 };
-        return Object.values(stats).reduce(
+        const values = Object.values(stats) as Array<QueueStats[string]>;
+        return values.reduce(
             (totals, queueStats) => ({
                 pending: totals.pending + (queueStats.by_state.pending || 0),
                 processing: totals.processing + (queueStats.by_state.processing || 0),

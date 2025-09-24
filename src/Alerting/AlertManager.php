@@ -18,7 +18,7 @@ class AlertManager
 
     public function __construct(
         QueueDriverInterface $queueDriver,
-        LoggerInterface $logger = null
+        ?LoggerInterface $logger = null
     ) {
         $this->queueDriver = $queueDriver;
         $this->logger = $logger ?? new NullLogger();
