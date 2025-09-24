@@ -15,8 +15,8 @@ flowchart LR
   end
 
   subgraph Storage["Queue Storage (SQLite via DatabaseQueueDriver)"]
-    S1["push → INSERT encrypted(+compressed) payload"]
-    S2["pop → SELECT pending by priority, mark processing"]
+    S1["push -> INSERT encrypted(+compressed) payload"]
+    S2["pop -> SELECT pending by priority, mark processing"]
     S3["update/delete/release/retry/cleanup"]
   end
 
@@ -30,7 +30,7 @@ flowchart LR
   subgraph Scheduler["JobScheduler"]
     SCH1["schedule(ScheduledJob)"]
     SCH2["run() checkInterval"]
-    SCH3["isDue → push execution job"]
+    SCH3["isDue -> push execution job"]
   end
 
   subgraph Dashboard["HTTP API + React UI"]
@@ -51,7 +51,7 @@ flowchart LR
   W2 -->|error & final| W4 --> S3
   W4 --> S3
 
-  Scheduler -. config/CLI .-> SCH1
+  CFG["config/CLI"] -.-> SCH1
   SCH2 -->|due| SCH3 --> S1
 
   API <--> QMstats
@@ -71,9 +71,7 @@ sequenceDiagram
   alt job available
     Driver-->>Worker: Job (state=processing)
     Worker->>Job: setState(processing); incrementAttempts()
-    alt timeout configured
-      Worker->>Worker: pcntl_alarm(timeout)
-    end
+    Worker->>Worker: setup timeout if configured
     Worker->>Job: handle()
     Worker->>Worker: pcntl_alarm(0)
     Worker->>Job: setState(completed); setCompletedAt()
