@@ -8,22 +8,20 @@ use TaskQueue\QueueManager;
 use TaskQueue\Drivers\DatabaseQueueDriver;
 use TaskQueue\Jobs\TestJob;
 use TaskQueue\Support\Encryption;
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
+use TaskQueue\Support\Database;
+use TaskQueue\Support\LoggerFactory;
 
 echo "🚀 PERFORMANCE TESTING SUITE\n";
 echo "============================\n\n";
 
 // Setup database connection
-$pdo = new PDO('sqlite:' . __DIR__ . '/storage/performance_test.db');
-$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$pdo = Database::createSqlitePdo(__DIR__ . '/storage/performance.db');
 
 // Setup encryption
 $encryption = new Encryption('performance-test-key-32-characters');
 
 // Setup logger
-$logger = new Logger('performance-test');
-$logger->pushHandler(new StreamHandler('php://stdout', Logger::INFO));
+$logger = LoggerFactory::createStyledLogger('performance');
 
 // Create queue manager
 $driver = new DatabaseQueueDriver($pdo, $encryption);
@@ -58,9 +56,9 @@ $avgDispatchTime = array_sum($dispatchTimes) / count($dispatchTimes);
 $maxDispatchTime = max($dispatchTimes);
 $minDispatchTime = min($dispatchTimes);
 
-echo "  ✅ Average dispatch time: " . round($avgDispatchTime, 3) . "ms\n";
-echo "  ✅ Max dispatch time: " . round($maxDispatchTime, 3) . "ms\n";
-echo "  ✅ Min dispatch time: " . round($minDispatchTime, 3) . "ms\n";
+echo "  ✅ Average dispatch time: " . number_format($avgDispatchTime, 3) . "ms\n";
+echo "  ✅ Max dispatch time: " . number_format($maxDispatchTime, 3) . "ms\n";
+echo "  ✅ Min dispatch time: " . number_format($minDispatchTime, 3) . "ms\n";
 
 $latencyRequirement = $avgDispatchTime < 10;
 echo "  " . ($latencyRequirement ? "✅" : "❌") . " Latency requirement (< 10ms): " . 
@@ -88,9 +86,9 @@ $totalTime = $endTime - $startTime;
 $jobsPerSecond = $throughputJobs / $totalTime;
 $jobsPerMinute = $jobsPerSecond * 60;
 
-echo "  ✅ Total time: " . round($totalTime, 3) . " seconds\n";
-echo "  ✅ Jobs per second: " . round($jobsPerSecond, 2) . "\n";
-echo "  ✅ Jobs per minute: " . round($jobsPerMinute, 2) . "\n";
+echo "  ✅ Total time: " . number_format($totalTime, 3) . " seconds\n";
+echo "  ✅ Jobs per second: " . number_format($jobsPerSecond, 2) . "\n";
+echo "  ✅ Jobs per minute: " . number_format($jobsPerMinute, 2) . "\n";
 
 $throughputRequirement = $jobsPerMinute >= 10000;
 echo "  " . ($throughputRequirement ? "✅" : "❌") . " Throughput requirement (10K+ jobs/minute): " . 
@@ -110,15 +108,15 @@ for ($i = 0; $i < $testCount; $i++) {
     $memoryUsage = $worker->getMemoryUsage();
     $memoryTests[] = $memoryUsage;
     
-    echo "  Worker " . ($i + 1) . ": " . round($memoryUsage / 1024 / 1024, 2) . "MB\n";
+    echo "  Worker " . ($i + 1) . ": " . number_format($memoryUsage / 1024 / 1024, 2) . "MB\n";
 }
 
 $avgMemoryUsage = array_sum($memoryTests) / count($memoryTests);
 $maxMemoryUsage = max($memoryTests);
 $memoryLimit = 50 * 1024 * 1024; // 50MB
 
-echo "  ✅ Average memory usage: " . round($avgMemoryUsage / 1024 / 1024, 2) . "MB\n";
-echo "  ✅ Max memory usage: " . round($maxMemoryUsage / 1024 / 1024, 2) . "MB\n";
+echo "  ✅ Average memory usage: " . number_format($avgMemoryUsage / 1024 / 1024, 2) . "MB\n";
+echo "  ✅ Max memory usage: " . number_format($maxMemoryUsage / 1024 / 1024, 2) . "MB\n";
 echo "  ✅ Memory limit: 50MB\n";
 
 $memoryRequirement = $maxMemoryUsage < $memoryLimit;
@@ -133,7 +131,7 @@ $payloadSizes = [1024, 10240, 102400, 512000, 1048576]; // 1KB, 10KB, 100KB, 500
 $payloadTests = [];
 
 foreach ($payloadSizes as $size) {
-    echo "Testing payload size: " . round($size / 1024, 1) . "KB...\n";
+    echo "Testing payload size: " . number_format($size / 1024, 1) . "KB...\n";
     
     $largePayload = str_repeat('A', $size);
     $startTime = microtime(true);
@@ -149,13 +147,13 @@ foreach ($payloadSizes as $size) {
     $processingTime = ($endTime - $startTime) * 1000;
     $payloadTests[] = ['size' => $size, 'time' => $processingTime];
     
-    echo "  ✅ Processed in: " . round($processingTime, 3) . "ms\n";
+    echo "  ✅ Processed in: " . number_format($processingTime, 3) . "ms\n";
 }
 
 $largestPayload = max(array_column($payloadTests, 'size'));
 $payloadRequirement = $largestPayload >= 1048576; // 1MB
 
-echo "  ✅ Largest payload tested: " . round($largestPayload / 1024 / 1024, 2) . "MB\n";
+echo "  ✅ Largest payload tested: " . number_format($largestPayload / 1024 / 1024, 2) . "MB\n";
 echo "  " . ($payloadRequirement ? "✅" : "❌") . " Payload requirement (up to 1MB): " . 
      ($payloadRequirement ? "PASS" : "FAIL") . "\n\n";
 
@@ -177,15 +175,15 @@ for ($i = 0; $i < $workerCount; $i++) {
     $startupTime = ($endTime - $startTime) * 1000; // Convert to milliseconds
     $startupTests[] = $startupTime;
     
-    echo "  Worker " . ($i + 1) . ": " . round($startupTime, 3) . "ms\n";
+    echo "  Worker " . ($i + 1) . ": " . number_format($startupTime, 3) . "ms\n";
 }
 
 $avgStartupTime = array_sum($startupTests) / count($startupTests);
 $maxStartupTime = max($startupTests);
 $startupRequirement = $maxStartupTime < 1000; // 1 second = 1000ms
 
-echo "  ✅ Average startup time: " . round($avgStartupTime, 3) . "ms\n";
-echo "  ✅ Max startup time: " . round($maxStartupTime, 3) . "ms\n";
+echo "  ✅ Average startup time: " . number_format($avgStartupTime, 3) . "ms\n";
+echo "  ✅ Max startup time: " . number_format($maxStartupTime, 3) . "ms\n";
 echo "  " . ($startupRequirement ? "✅" : "❌") . " Startup requirement (< 1 second): " . 
      ($startupRequirement ? "PASS" : "FAIL") . "\n\n";
 
@@ -208,7 +206,7 @@ for ($i = 0; $i < $concurrentWorkerCount; $i++) {
 $endTime = microtime(true);
 $creationTime = ($endTime - $startTime) * 1000;
 
-echo "  ✅ Created {$concurrentWorkerCount} workers in: " . round($creationTime, 3) . "ms\n";
+echo "  ✅ Created {$concurrentWorkerCount} workers in: " . number_format($creationTime, 3) . "ms\n";
 
 // Test worker status and memory
 $activeWorkers = 0;
@@ -225,8 +223,8 @@ $avgMemoryPerWorker = $totalMemory / $concurrentWorkerCount;
 $concurrentRequirement = $concurrentWorkerCount >= 100;
 
 echo "  ✅ Active workers: {$activeWorkers}\n";
-echo "  ✅ Average memory per worker: " . round($avgMemoryPerWorker / 1024 / 1024, 2) . "MB\n";
-echo "  ✅ Total memory usage: " . round($totalMemory / 1024 / 1024, 2) . "MB\n";
+echo "  ✅ Average memory per worker: " . number_format($avgMemoryPerWorker / 1024 / 1024, 2) . "MB\n";
+echo "  ✅ Total memory usage: " . number_format($totalMemory / 1024 / 1024, 2) . "MB\n";
 echo "  " . ($concurrentRequirement ? "✅" : "❌") . " Concurrent workers requirement (100+): " . 
      ($concurrentRequirement ? "PASS" : "FAIL") . "\n\n";
 
@@ -276,11 +274,11 @@ while ($processedJobs < $e2eJobs) {
 $processingTime = microtime(true) - $processingStartTime;
 $totalTime = microtime(true) - $startTime;
 
-echo "  ✅ Job creation time: " . round($creationTime * 1000, 3) . "ms\n";
-echo "  ✅ Job processing time: " . round($processingTime * 1000, 3) . "ms\n";
-echo "  ✅ Total end-to-end time: " . round($totalTime * 1000, 3) . "ms\n";
+echo "  ✅ Job creation time: " . number_format($creationTime * 1000, 3) . "ms\n";
+echo "  ✅ Job processing time: " . number_format($processingTime * 1000, 3) . "ms\n";
+echo "  ✅ Total end-to-end time: " . number_format($totalTime * 1000, 3) . "ms\n";
 echo "  ✅ Jobs processed: {$processedJobs}/{$e2eJobs}\n";
-echo "  ✅ Average time per job: " . round(($totalTime / $e2eJobs) * 1000, 3) . "ms\n\n";
+echo "  ✅ Average time per job: " . number_format(($totalTime / $e2eJobs) * 1000, 3) . "ms\n\n";
 
 // Performance Summary
 echo "🎯 PERFORMANCE SUMMARY\n";
@@ -312,11 +310,11 @@ if ($passedRequirements === $totalRequirements) {
 }
 
 echo "\nDetailed Metrics:\n";
-echo "  • Average dispatch latency: " . round($avgDispatchTime, 3) . "ms\n";
-echo "  • Throughput: " . round($jobsPerMinute, 0) . " jobs/minute\n";
-echo "  • Max memory usage: " . round($maxMemoryUsage / 1024 / 1024, 2) . "MB\n";
-echo "  • Max payload: " . round($largestPayload / 1024 / 1024, 2) . "MB\n";
-echo "  • Max startup time: " . round($maxStartupTime, 3) . "ms\n";
+echo "  • Average dispatch latency: " . number_format($avgDispatchTime, 3) . "ms\n";
+echo "  • Throughput: " . number_format($jobsPerMinute, 0) . " jobs/minute\n";
+echo "  • Max memory usage: " . number_format($maxMemoryUsage / 1024 / 1024, 2) . "MB\n";
+echo "  • Max payload: " . number_format($largestPayload / 1024 / 1024, 2) . "MB\n";
+echo "  • Max startup time: " . number_format($maxStartupTime, 3) . "ms\n";
 echo "  • Concurrent workers: {$concurrentWorkerCount}\n";
 
 $manager->disconnect();

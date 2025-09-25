@@ -210,7 +210,7 @@ class NodeDiscovery
             'total_nodes' => $totalNodes,
             'active_nodes' => count($activeNodes),
             'dead_nodes' => $deadNodes,
-            'average_load' => round($avgLoad, 2),
+            'average_load' => number_format($avgLoad, 2),
             'average_memory_usage' => $avgMemory,
             'total_jobs_processed' => $totalJobsProcessed,
             'local_node_id' => $this->localNodeId

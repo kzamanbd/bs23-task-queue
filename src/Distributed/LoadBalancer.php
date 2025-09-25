@@ -310,7 +310,7 @@ class LoadBalancer
 
         return [
             'total_nodes' => $totalNodes,
-            'average_load' => round($totalLoad / $totalNodes, 2),
+            'average_load' => number_format($totalLoad / $totalNodes, 2),
             'strategy' => $this->strategy,
             'weights' => $this->weights
         ];

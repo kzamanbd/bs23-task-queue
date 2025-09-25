@@ -1,4 +1,4 @@
-# 🎯 **Task Queue System - Comprehensive Interview Questions**
+# 🎯 **Task Queue System - Comprehensive Questions**
 
 > **Based on:** Enterprise Task Queue & Job Processing System  
 > **Complexity Level:** Junior to Senior/Lead Developer  
@@ -1634,7 +1634,7 @@ class AdaptiveRetryStrategy
 
 ---
 
-## 📝 **Interview Evaluation Rubric**
+## 📝 **Evaluation Rubric**
 
 ### **Junior Developer (0-2 years)**
 

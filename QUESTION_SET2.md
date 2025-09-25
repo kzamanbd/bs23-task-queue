@@ -1,6 +1,6 @@
-# Task Queue Interview Preparation
+# Task Queue Exam Preparation
 
-## PHP Developer Interview Preparation
+## For PHP Developer Exam Preparation
 
 ### Architecture & System Design
 

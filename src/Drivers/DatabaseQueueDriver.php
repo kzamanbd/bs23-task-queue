@@ -506,7 +506,7 @@ class DatabaseQueueDriver implements QueueDriverInterface
                     'completed' => (int) $row['completed'],
                     'failed' => (int) $row['failed']
                 ],
-                'avg_priority' => round((float) $row['avg_priority'], 2),
+                'avg_priority' => number_format((float) $row['avg_priority'], 2),
                 'oldest_job' => $row['oldest_job'],
                 'newest_job' => $row['newest_job']
             ];

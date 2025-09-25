@@ -30,8 +30,8 @@ class Performance extends Action
             'processing' => $totalProcessing,
             'completed' => $totalCompleted,
             'failed' => $totalFailed,
-            'success_rate' => $totalJobs > 0 ? round(($totalCompleted / $totalJobs) * 100, 2) : 0,
-            'failure_rate' => $totalJobs > 0 ? round(($totalFailed / $totalJobs) * 100, 2) : 0,
+            'success_rate' => $totalJobs > 0 ? number_format(($totalCompleted / $totalJobs) * 100, 2) : 0,
+            'failure_rate' => $totalJobs > 0 ? number_format(($totalFailed / $totalJobs) * 100, 2) : 0,
         ];
     }
 }

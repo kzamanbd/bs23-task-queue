@@ -292,7 +292,7 @@ class AlertManager
                     return '0';
                 }
                 $memoryLimitBytes = $this->parseMemoryLimit($memoryLimit);
-                return (string) round(($memoryUsage / $memoryLimitBytes) * 100, 2);
+                return (string) number_format(($memoryUsage / $memoryLimitBytes) * 100, 2);
             default:
                 return '0';
         }
