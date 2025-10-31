@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace TaskQueue\Support;
 
+use Random\RandomException;
+use RuntimeException;
+
 class Encryption
 {
     private string $key;
@@ -15,6 +18,9 @@ class Encryption
         $this->cipher = $cipher;
     }
 
+    /**
+     * @throws RandomException
+     */
     public function encrypt(string $data): string
     {
         if (empty($this->key)) {
@@ -27,7 +33,7 @@ class Encryption
         $encrypted = openssl_encrypt($data, $this->cipher, $this->key, 0, $iv, $tag);
         
         if ($encrypted === false) {
-            throw new \RuntimeException('Failed to encrypt data');
+            throw new RuntimeException('Failed to encrypt data');
         }
 
         return base64_encode($iv . $tag . $encrypted);
@@ -41,7 +47,7 @@ class Encryption
 
         $data = base64_decode($encryptedData, true);
         if ($data === false) {
-            throw new \RuntimeException('Invalid encrypted data');
+            throw new RuntimeException('Invalid encrypted data');
         }
 
         $iv = substr($data, 0, 16);
@@ -51,7 +57,7 @@ class Encryption
         $decrypted = openssl_decrypt($encrypted, $this->cipher, $this->key, 0, $iv, $tag);
         
         if ($decrypted === false) {
-            throw new \RuntimeException('Failed to decrypt data');
+            throw new RuntimeException('Failed to decrypt data');
         }
 
         return $decrypted;
